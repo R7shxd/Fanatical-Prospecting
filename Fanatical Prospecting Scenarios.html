@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanatical Prospecting: Scenario-Based Learning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Visualization & Content Choices: 
+        - Scenarios: Goal: Apply knowledge. Method: Text-based challenge, multiple-choice options. Interaction: Clickable buttons for options.
+        - Feedback/Outcome: Goal: Reinforce learning. Method: Dynamic text display. Interaction: Content updates based on user choice.
+        - Principle Reference: Goal: Connect theory to practice. Method: Text link to source. Interaction: Text display.
+        - Justification: Text-based scenarios with clear choices and feedback are optimal for scenario-based learning, directly applying the report's qualitative insights. No complex charts or SVG are needed as the focus is on decision-making and consequence.
+        - Library/Method: Tailwind CSS for layout and styling, Vanilla JS for all interactive logic and dynamic content updates.
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .scenario-container { background-color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); padding: 2rem; max-width: 900px; margin: 2rem auto; }
+        .option-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #f0f9ff; /* sky-50 */
+            border: 1px solid #bae6fd; /* sky-200 */
+            color: #0c4a6e; /* sky-900 */
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .option-button:hover {
+            background-color: #e0f2fe; /* sky-100 */
+            border-color: #7dd3fc; /* sky-300 */
+            transform: translateY(-2px);
+        }
+        .option-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background-color: #f0f9ff;
+        }
+        .feedback-box {
+            background-color: #f0f9ff; /* sky-50 */
+            border-left: 4px solid #0ea5e9; /* sky-500 */
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            color: #0c4a6e;
+        }
+        .feedback-box p { margin-bottom: 0.5rem; }
+        .feedback-box strong { color: #075985; }
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-button-primary {
+            background-color: #0ea5e9; /* sky-500 */
+            color: white;
+        }
+        .nav-button-primary:hover {
+            background-color: #0284c7; /* sky-600 */
+        }
+        .nav-button-secondary {
+            background-color: #cbd5e1; /* slate-300 */
+            color: #334155; /* slate-700 */
+        }
+        .nav-button-secondary:hover {
+            background-color: #94a3b8; /* slate-400 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-sky-700 text-white p-4 shadow-md">
+        <div class="container mx-auto text-center">
+            <h1 class="text-3xl font-bold">Fanatical Prospecting: Scenario-Based Learning</h1>
+            <p class="mt-2 text-sky-100">Apply key principles in interactive sales challenges.</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="scenario-container">
+            <div id="scenario-display">
+                <h2 class="text-2xl font-semibold mb-4 text-sky-800" id="scenario-title"></h2>
+                <p class="text-lg mb-4 text-slate-700" id="scenario-challenge"></p>
+                <p class="text-sm font-medium text-sky-600 mb-6" id="scenario-learning-focus"></p>
+
+                <div id="options-container" class="space-y-3 mb-6">
+                    </div>
+
+                <div id="feedback-area" class="hidden feedback-box">
+                    <h3 class="text-xl font-semibold mb-2 text-sky-700">Feedback & Outcome:</h3>
+                    <p id="feedback-text" class="mb-2"></p>
+                    <p id="outcome-text" class="mb-2"></p>
+                    <p class="text-sm font-medium text-sky-600" id="principle-reference"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <button id="prev-scenario-btn" class="nav-button nav-button-secondary" disabled>Previous Scenario</button>
+                <button id="next-scenario-btn" class="nav-button nav-button-primary" disabled>Next Scenario</button>
+                <button id="restart-quiz-btn" class="nav-button nav-button-secondary hidden">Restart</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 text-center p-8 mt-auto">
+        <p>&copy; <span id="currentYear"></span> Fanatical Prospecting Interactive Guide. Concepts based on Jeb Blount's work.</p>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const scenariosData = {
+            "title": "Fanatical Prospecting: Scenario-Based Learning Modules",
+            "moduleDescription": "Interactive scenarios to apply Fanatical Prospecting principles. Each scenario presents a common sales challenge. Choose an option and see the potential outcome and related learning points from the book.",
+            "scenarios": [
+                {
+                    "id": "scenario1_fear_of_calling",
+                    "title": "The Hesitant Prospector",
+                    "challenge": "You have a list of high-potential prospects for a new product launch. You've spent hours researching them and perfecting your script, but you find yourself hesitating to pick up the phone, worrying about saying the wrong thing or facing rejection.",
+                    "learningFocus": ["The Three Ps (Perfectionism, Paralysis from Analysis)", "Art of Interrupting", "Disrupting Inaction"],
+                    "options": [
+                        {
+                            "id": "s1_opt1",
+                            "text": "Spend more time refining the script and researching even more details about the prospects to feel perfectly prepared.",
+                            "feedback": "While preparation is good, excessive refinement can be a form of perfectionism, one of the 'Three Ps'. This often masks a fear of rejection and leads to further inaction.",
+                            "outcome": "You feel more 'prepared' but another hour passes with no calls made. The anxiety about making the actual calls might even increase. This aligns with Perfectionism leading to activity gaps.",
+                            "principleReference": "Perfectionism (Source: IV.B), Disrupting the Three Ps (Source: IV.D)"
+                        },
+                        {
+                            "id": "s1_opt2",
+                            "text": "Decide to send emails to all prospects on the list instead of calling, as it feels less confrontational.",
+                            "feedback": "Switching to a less direct channel might feel safer, but it often yields lower engagement for initial high-impact outreach. Fanatical Prospecting emphasizes balancing channels and not shying away from more direct methods like phone calls.",
+                            "outcome": "You send out emails, get a few automated replies, and a couple of 'not interested'. The opportunity for immediate dialogue and relationship building via phone is missed. This choice avoids the discomfort of interruption but may not be the most effective first touch for these high-potential prospects.",
+                            "principleReference": "Balanced Prospecting Methodology (Source: VI.A), Telephone Prospecting Effectiveness (Source: VI.F.1)"
+                        },
+                        {
+                            "id": "s1_opt3",
+                            "text": "Acknowledge the hesitation, take a deep breath, and commit to making just one call from the list immediately, focusing on action over perfection.",
+                            "feedback": "This approach directly confronts the psychological barrier. Fanatical Prospecting advocates for 'messy success' and breaking inaction with small, decisive steps.",
+                            "outcome": "You make the first call. It might not be perfect, but the ice is broken. Each subsequent call becomes slightly easier, and you start building momentum. This aligns with the strategy of 'disrupting the Three Ps' through direct action.",
+                            "principleReference": "Disrupting the Three Ps (Source: IV.D), The Art of Interrupting (Source: II), Messy Success vs. Perfect Mediocrity (Source: IV.B)"
+                        },
+                        {
+                            "id": "s1_opt4",
+                            "text": "Wait for a 'better time' when you feel more confident or when market conditions seem more favorable.",
+                            "feedback": "Waiting for the 'perfect moment' is a classic form of procrastination, another of the 'Three Ps'. Market conditions and personal confidence often improve *through* action, not waiting.",
+                            "outcome": "The 'better time' rarely arrives. The list gets stale, and opportunities may be missed. This inaction feeds the cycle of an empty pipeline.",
+                            "principleReference": "Procrastination (Source: IV.A), 30-Day Rule (Source: III.B - inaction today impacts future pipeline)"
+                        }
+                    ]
+                },
+                {
+                    "id": "scenario2_pipeline_slump",
+                    "title": "The Roller Coaster Pipeline",
+                    "challenge": "You had two great months, so you eased up on prospecting to focus on closing. Now, 90 days later, your pipeline is weak, and you're in a sales slump, feeling desperate.",
+                    "learningFocus": ["30-Day Rule", "Law of Replacement", "Universal Law of Need"],
+                    "options": [
+                        {
+                            "id": "s2_opt1",
+                            "text": "Double down on trying to close the few remaining old deals in your pipeline, offering heavy discounts.",
+                            "feedback": "Focusing solely on old, potentially stale deals out of desperation often leads to unfavorable terms and doesn't address the root cause – an empty pipeline.",
+                            "outcome": "You might close one deal with a poor margin, but the pipeline remains critically low. This illustrates the Universal Law of Need, where desperation repels good outcomes.",
+                            "principleReference": "Universal Law of Need (Source: III.A), Misdiagnosing a Prospecting Problem as a Closing Issue (Source: III.B)"
+                        },
+                        {
+                            "id": "s2_opt2",
+                            "text": "Immediately implement an intensive 'Power Hour' of prospecting every day for the next 30 days, regardless of how you feel.",
+                            "feedback": "This proactive approach directly addresses the pipeline issue by committing to consistent activity, aligning with the core tenets of Fanatical Prospecting.",
+                            "outcome": "It's tough at first, but new leads start entering the pipeline. Within 30-60 days, you begin to see more qualified opportunities, and by 90 days, your sales start to recover, demonstrating the 30-Day Rule in action.",
+                            "principleReference": "30-Day Rule (Source: III.B), Law of Replacement (Source: III.C), Power Hours (Source: VI.F.1)"
+                        },
+                        {
+                            "id": "s2_opt3",
+                            "text": "Blame poor lead quality or market conditions for the slump and wait for things to improve.",
+                            "feedback": "Externalizing blame avoids personal responsibility, a core aspect of the Fanatical Prospector mindset. Market conditions are rarely the sole cause of an individual sales slump.",
+                            "outcome": "The pipeline remains empty, and the slump continues. This approach fails to address the need for consistent prospecting activity.",
+                            "principleReference": "CEO Mindset - Personal Responsibility (Source: V.A), Avoiding Excuses (Source: I)"
+                        },
+                        {
+                            "id": "s2_opt4",
+                            "text": "Focus heavily on networking events and social selling, hoping for quick inbound leads to fill the gap.",
+                            "feedback": "While networking and social selling are valuable parts of a balanced strategy, relying on them for quick fixes during a slump can be unpredictable and often insufficient to rapidly rebuild a depleted pipeline. They are better for long-term familiarity.",
+                            "outcome": "You might get a few leads, but it's unlikely to be enough to quickly resolve the severe pipeline shortage. This highlights the need for more direct and high-volume prospecting methods during a crisis.",
+                            "principleReference": "Balanced Prospecting Methodology (Source: VI.A), Law of Familiarity (Source: VI.D)"
+                        }
+                    ]
+                },
+                {
+                    "id": "scenario3_time_mastery_issues",
+                    "title": "The Overwhelmed Scheduler",
+                    "challenge": "Your calendar is packed with administrative tasks, internal meetings, and client follow-ups. You constantly feel like you don't have enough time for prospecting during your 'Golden Hours.'",
+                    "learningFocus": ["Time Blocking", "Golden Hours vs. Platinum Hours", "CEO Mindset", "Saying No"],
+                    "options": [
+                        {
+                            "id": "s3_opt1",
+                            "text": "Continue to fit prospecting in 'when you can' around other commitments, often skipping it when busy.",
+                            "feedback": "This reactive approach de-prioritizes the most crucial activity for pipeline health. Prospecting needs dedicated, protected time.",
+                            "outcome": "Prospecting remains inconsistent, leading to a fluctuating pipeline and eventual slumps. This undermines the principle of protecting Golden Hours for revenue-generating activities.",
+                            "principleReference": "Protecting Golden Hours (Source: V.B), Time Blocking (Source: V.C)"
+                        },
+                        {
+                            "id": "s3_opt2",
+                            "text": "Block out 1-2 specific 'Golden Hours' for prospecting each day in your calendar as non-negotiable appointments and communicate this to colleagues.",
+                            "feedback": "This is a core principle of effective time management in sales. Treating prospecting time as sacred is key.",
+                            "outcome": "You consistently dedicate focused time to prospecting, leading to a healthier pipeline. Administrative tasks are shifted to 'Platinum Hours'. This reflects a CEO Mindset.",
+                            "principleReference": "Time Blocking (Source: V.C), Golden Hours (Source: V.B), CEO Mindset (Source: V.A)"
+                        },
+                        {
+                            "id": "s3_opt3",
+                            "text": "Attempt to multitask during meetings or admin work by quickly sending a few prospecting emails.",
+                            "feedback": "Multitasking is a myth; it reduces efficiency and the quality of all tasks undertaken, especially complex ones like prospecting and meaningful engagement.",
+                            "outcome": "Neither your admin tasks nor your prospecting efforts are effective. Emails are rushed and generic, and you're not fully present in meetings. This demonstrates the inefficiency of multitasking.",
+                            "principleReference": "Time Blocking and Concentration of Power (Source: V.C - against multitasking)"
+                        },
+                        {
+                            "id": "s3_opt4",
+                            "text": "Politely decline or reschedule non-critical internal meetings that conflict with your planned Golden Hours for prospecting.",
+                            "feedback": "Learning to say 'no' or to negotiate time for mission-critical activities is essential for protecting Golden Hours.",
+                            "outcome": "You free up crucial time for prospecting. While it might require assertive communication, it demonstrates prioritization of revenue-generating activities.",
+                            "principleReference": "Protecting Golden Hours - Learn to Say No (Source: V.B)"
+                        }
+                    ]
+                },
+                {
+                    "id": "scenario4_ineffective_messaging",
+                    "title": "The Generic Pitcher",
+                    "challenge": "You've finally got a prospect on the phone, but your pitch is generic, focusing on your company's features. The prospect quickly says, 'I'm not interested,' or 'Just send me some information.'",
+                    "learningFocus": ["WIIFM (What's In It For Me?)", "Bridging to Value", "RBO Turnaround Framework", "Art of Asking"],
+                    "options": [
+                        {
+                            "id": "s4_opt1",
+                            "text": "Immediately agree and offer to send information, ending the call quickly.",
+                            "feedback": "This is a common brush-off. Agreeing immediately misses an opportunity to understand the prospect's real concerns or to pivot the conversation.",
+                            "outcome": "The prospect likely won't read the information, and the opportunity for a meaningful conversation is lost. This fails to navigate the initial RBO.",
+                            "principleReference": "Turning Around RBOs (Source: VII.D), Brush-Offs"
+                        },
+                        {
+                            "id": "s4_opt2",
+                            "text": "Launch into a more detailed explanation of your product's features, hoping something will resonate.",
+                            "feedback": "More feature-dumping rarely works if the initial approach didn't connect with the prospect's needs or 'WIIFM'.",
+                            "outcome": "The prospect becomes more disengaged and is likely to end the call. This approach doesn't address their lack of interest in features over benefits.",
+                            "principleReference": "Power of 'Because' (WIIFM) and Bridging to Value (Source: VII.B)"
+                        },
+                        {
+                            "id": "s4_opt3",
+                            "text": "Use an RBO turnaround: Acknowledge their statement, disrupt their expectation, and re-ask for a brief discovery conversation (e.g., 'I understand, many say that initially. Quick question - if we could help you solve X problem, would that be valuable?').",
+                            "feedback": "This applies the Anchor-Disrupt-Ask framework to try and re-engage the prospect by pivoting to potential value and their specific problems.",
+                            "outcome": "You might re-engage the prospect and uncover their actual needs or reasons for disinterest, potentially leading to a scheduled follow-up. This demonstrates effective RBO handling.",
+                            "principleReference": "Turning Around RBOs - Anchor, Disrupt, Ask Framework (Source: VII.D), Bridging to Value (Source: VII.B)"
+                        },
+                        {
+                            "id": "s4_opt4",
+                            "text": "Apologize for bothering them and mark them as 'not interested' in the CRM.",
+                            "feedback": "While respecting their time is good, immediately giving up without attempting a soft turnaround can prematurely close off potential opportunities.",
+                            "outcome": "A potentially viable prospect is lost without a real attempt to understand their perspective or offer relevant value. This highlights a missed opportunity in the 'Art of Asking' or handling initial resistance.",
+                            "principleReference": "The Art of Asking (Source: VII.C)"
+                        }
+                    ]
+                },
+                {
+                    "id": "scenario5_gatekeeper_challenge",
+                    "title": "The Gatekeeper Gauntlet",
+                    "challenge": "You need to reach a high-value decision-maker, but their gatekeeper is consistently blocking your calls, refusing to give out any information or put you through.",
+                    "learningFocus": ["Dealing with Gatekeepers", "Law of Familiarity", "Persistence"],
+                    "options": [
+                        {
+                            "id": "s5_opt1",
+                            "text": "Give up on this prospect after a few attempts, assuming the gatekeeper is impenetrable.",
+                            "feedback": "Persistence is key in prospecting. Giving up easily means missing out on valuable opportunities that others might also find hard to reach.",
+                            "outcome": "The high-value prospect remains uncontacted. This goes against the principle that 'persistence always wins' in navigating such barriers.",
+                            "principleReference": "Dealing with Gatekeepers - Persistence (Source: VI.F.6)"
+                        },
+                        {
+                            "id": "s5_opt2",
+                            "text": "Try being overly aggressive or deceptive with the gatekeeper to force your way through.",
+                            "feedback": "Aggression or deception ('holding the cheese') usually backfires, damaging your reputation and making future access even harder.",
+                            "outcome": "The gatekeeper becomes more resistant, and you might get blacklisted. This violates the strategy of being likable and transparent.",
+                            "principleReference": "Dealing with Gatekeepers - Be Likable, Hold the Cheese (Source: VI.F.6)"
+                        },
+                        {
+                            "id": "s5_opt3",
+                            "text": "Attempt to connect with the gatekeeper on a human level, be polite, transparent, use 'please,' and ask for their help or advice on the best way to reach the decision-maker.",
+                            "feedback": "This approach aligns with the recommended strategies: be likable, transparent, connect, and ask for help. Gatekeepers are people and often respond well to respect and genuine interaction.",
+                            "outcome": "You might build rapport with the gatekeeper, who could then provide valuable information, suggest a better time to call, or even advocate for you. This increases the chances of eventually reaching the decision-maker.",
+                            "principleReference": "Dealing with Gatekeepers - Seven Key Strategies (Source: VI.F.6)"
+                        },
+                        {
+                            "id": "s5_opt4",
+                            "text": "Only use alternative 'sidestep' methods like calling very early/late or using general email addresses, without directly engaging the gatekeeper again.",
+                            "feedback": "While 'sidestep' methods are useful, abandoning direct engagement with the gatekeeper (if done respectfully) misses the chance to turn them into an ally or gain direct insight.",
+                            "outcome": "You might eventually reach the decision-maker, but it could be less efficient or you might miss nuances the gatekeeper could have provided. A balanced approach often works best.",
+                            "principleReference": "Dealing with Gatekeepers - Change the Game (Sidestep) (Source: VI.F.6), Balanced Approach"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        let currentScenarioIndex = 0;
+        let selectedOptionId = null;
+
+        const scenarioTitleElem = document.getElementById('scenario-title');
+        const scenarioChallengeElem = document.getElementById('scenario-challenge');
+        const scenarioLearningFocusElem = document.getElementById('scenario-learning-focus');
+        const optionsContainerElem = document.getElementById('options-container');
+        const feedbackAreaElem = document.getElementById('feedback-area');
+        const feedbackTextElem = document.getElementById('feedback-text');
+        const outcomeTextElem = document.getElementById('outcome-text');
+        const principleReferenceElem = document.getElementById('principle-reference');
+        const prevScenarioBtn = document.getElementById('prev-scenario-btn');
+        const nextScenarioBtn = document.getElementById('next-scenario-btn');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+
+        function loadScenario(index) {
+            const scenario = scenariosData.scenarios[index];
+            if (!scenario) return;
+
+            scenarioTitleElem.textContent = `Scenario ${index + 1}: ${scenario.title}`;
+            scenarioChallengeElem.textContent = scenario.challenge;
+            scenarioLearningFocusElem.textContent = `Learning Focus: ${scenario.learningFocus.join(', ')}`;
+
+            optionsContainerElem.innerHTML = '';
+            scenario.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = option.text;
+                button.onclick = () => selectOption(option);
+                optionsContainerElem.appendChild(button);
+            });
+
+            feedbackAreaElem.classList.add('hidden');
+            feedbackTextElem.textContent = '';
+            outcomeTextElem.textContent = '';
+            principleReferenceElem.textContent = '';
+            
+            updateNavigationButtons();
+            enableOptionButtons();
+        }
+
+        function selectOption(selectedOption) {
+            disableOptionButtons();
+            feedbackTextElem.innerHTML = `<strong>Feedback:</strong> ${selectedOption.feedback}`;
+            outcomeTextElem.innerHTML = `<strong>Outcome:</strong> ${selectedOption.outcome}`;
+            principleReferenceElem.innerHTML = `<strong>Principle Reference:</strong> ${selectedOption.principleReference}`;
+            feedbackAreaElem.classList.remove('hidden');
+            selectedOptionId = selectedOption.id; // Store selected option for potential future use
+            updateNavigationButtons();
+        }
+
+        function enableOptionButtons() {
+            const buttons = optionsContainerElem.querySelectorAll('.option-button');
+            buttons.forEach(button => button.disabled = false);
+        }
+
+        function disableOptionButtons() {
+            const buttons = optionsContainerElem.querySelectorAll('.option-button');
+            buttons.forEach(button => button.disabled = true);
+        }
+
+        function updateNavigationButtons() {
+            prevScenarioBtn.disabled = currentScenarioIndex === 0;
+            nextScenarioBtn.disabled = feedbackAreaElem.classList.contains('hidden') || currentScenarioIndex === scenariosData.scenarios.length - 1;
+            restartQuizBtn.classList.toggle('hidden', currentScenarioIndex < scenariosData.scenarios.length - 1 || feedbackAreaElem.classList.contains('hidden'));
+        }
+
+        prevScenarioBtn.addEventListener('click', () => {
+            if (currentScenarioIndex > 0) {
+                currentScenarioIndex--;
+                loadScenario(currentScenarioIndex);
+            }
+        });
+
+        nextScenarioBtn.addEventListener('click', () => {
+            if (currentScenarioIndex < scenariosData.scenarios.length - 1) {
+                currentScenarioIndex++;
+                loadScenario(currentScenarioIndex);
+            }
+        });
+
+        restartQuizBtn.addEventListener('click', () => {
+            currentScenarioIndex = 0;
+            loadScenario(currentScenarioIndex);
+        });
+
+        // Initial load
+        loadScenario(currentScenarioIndex);
+
+    </script>
+</body>
+</html>

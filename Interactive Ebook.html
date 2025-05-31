@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanatical Prospecting: Interactive Ebook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Slate 50 */
+            color: #1e293b; /* Slate 900 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better scroll on smaller screens */
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem 0;
+            overflow-y: auto;
+        }
+        .ebook-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 95%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Ensure content stays within rounded corners */
+        }
+        .ebook-header {
+            padding: 1.5rem 2rem;
+            background-color: #0ea5e9; /* Sky 500 */
+            color: white;
+            text-align: center;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+        }
+        .ebook-header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .ebook-header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+        }
+        .ebook-content {
+            padding: 2rem;
+            flex-grow: 1;
+            overflow-y: auto; /* Enable scrolling for content */
+            transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
+            transform-origin: center center;
+            position: relative; /* For absolutely positioned elements like tooltips */
+        }
+        .ebook-content.page-enter {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        .ebook-content.page-enter-active {
+            transform: translateX(0%);
+            opacity: 1;
+        }
+        .ebook-content.page-exit {
+            transform: translateX(0%);
+            opacity: 1;
+        }
+        .ebook-content.page-exit-active {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .chapter-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a; /* Slate 900 */
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e2e8f0; /* Slate 200 */
+        }
+        .chapter-section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #334155; /* Slate 700 */
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .chapter-paragraph {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            color: #475569; /* Slate 600 */
+        }
+        .interactive-term {
+            font-weight: 600;
+            color: #0ea5e9; /* Sky 500 */
+            cursor: help;
+            border-bottom: 1px dotted #0ea5e9;
+            position: relative; /* For tooltip positioning */
+        }
+        .interactive-term:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1e293b; /* Slate 900 */
+            color: #fff;
+            text-align: center;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%; /* Position above the text */
+            left: 50%;
+            margin-left: -100px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+
+        .ebook-navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+        }
+        .nav-button {
+            background-color: #64748b; /* Slate 500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .nav-button:hover {
+            background-color: #475569; /* Slate 600 */
+            transform: translateY(-1px);
+        }
+        .nav-button:disabled {
+            background-color: #cbd5e1; /* Slate 300 */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .page-indicator {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #475569;
+            align-self: center;
+        }
+
+        .table-of-contents {
+            padding: 2rem;
+            background-color: #f0f9ff; /* Sky 50 */
+            border-bottom: 1px solid #e0f2fe; /* Sky 100 */
+        }
+        .table-of-contents h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #0c4a6e; /* Sky 900 */
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+        @media (min-width: 640px) {
+            .toc-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .toc-list li a {
+            display: block;
+            padding: 0.75rem 1rem;
+            background-color: #e0f2fe; /* Sky 100 */
+            border-radius: 0.75rem;
+            color: #0c4a6e; /* Sky 900 */
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .toc-list li a:hover {
+            background-color: #bae6fd; /* Sky 200 */
+            transform: translateY(-1px);
+        }
+
+        /* Embedded Question Styling */
+        .embedded-question-container {
+            background-color: #f0f9ff; /* sky-50 */
+            border: 2px solid #93c5fd; /* blue-300 */
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        .embedded-question-container p.question-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .embedded-question-container .option-button {
+            width: 100%;
+            margin-bottom: 0.75rem;
+            background-color: #e0f2fe; /* sky-100 */
+            border-color: #60a5fa; /* blue-400 */
+            color: #1e3a8a; /* blue-900 */
+        }
+        .embedded-question-container .option-button.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #4ade80; /* green-400 */
+            color: #166534; /* green-900 */
+        }
+        .embedded-question-container .option-button.incorrect {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #f87171; /* red-400 */
+            color: #991b1b; /* red-900 */
+        }
+        .embedded-question-container .feedback-message {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="ebook-container">
+        <div class="ebook-header">
+            <h1>Fanatical Prospecting</h1>
+            <p>The Ultimate Guide to Opening Sales Conversations and Filling the Pipeline</p>
+        </div>
+
+        <div class="table-of-contents" id="toc">
+            <h3>Table of Contents</h3>
+            <ul class="toc-list">
+                <li><a href="#intro">Introduction: The Fanatical Mindset</a></li>
+                <li><a href="#chapter1">Chapter 1: The Case for Prospecting</a></li>
+                <li><a href="#chapter2">Chapter 2: Seven Mindsets of Fanatical Prospectors</a></li>
+                <li><a href="#chapter3">Chapter 3: The Three Ps That Are Holding You Back</a></li>
+                <li><a href="#chapter4">Chapter 4: Time: The Great Equalizer of Sales</a></li>
+                <li><a href="#chapter5">Chapter 5: Adopt a Balanced Prospecting Methodology</a></li>
+                <li><a href="#chapter6">Chapter 6: Dealing with Gatekeepers</a></li>
+                <li><a href="#chapter7">Chapter 7: Turning Around RBOs (Objections)</a></li>
+                <li><a href="#chapter8">Chapter 8: Mental Toughness for Sales</a></li>
+                <li><a href="#conclusion">Conclusion: The Ultimate Fanatical Prospector</a></li>
+            </ul>
+        </div>
+
+        <div class="ebook-content" id="ebook-content">
+            </div>
+
+        <div class="ebook-navigation">
+            <button id="prev-page" class="nav-button" disabled>Previous</button>
+            <span id="page-indicator" class="page-indicator">Page 1 of 10</span>
+            <button id="next-page" class="nav-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const ebookContentDiv = document.getElementById('ebook-content');
+        const prevButton = document.getElementById('prev-page');
+        const nextButton = document.getElementById('next-page');
+        const pageIndicator = document.getElementById('page-indicator');
+        const tocLinks = document.querySelectorAll('.toc-list a');
+
+        let currentPageIndex = 0;
+
+        const pages = [
+            {
+                id: 'intro',
+                title: 'Introduction: The Fanatical Mindset',
+                content: `
+                    <p class="chapter-paragraph">Welcome to the interactive guide to <strong>Fanatical Prospecting</strong>. This book isn't just about making more calls; it's about adopting a mindset that drives consistent, proactive effort to keep your sales pipeline overflowing. In today's competitive landscape, relying on inbound leads or hoping for referrals isn't enough. True, sustained sales success comes from a relentless commitment to finding and engaging new opportunities.</p>
+                    <p class="chapter-paragraph">This interactive ebook will break down key concepts from Jeb Blount's seminal work, providing you with actionable insights and testing your understanding along the way. Get ready to transform your approach to prospecting and take control of your sales destiny.</p>
+                `
+            },
+            {
+                id: 'chapter1',
+                title: 'Chapter 1: The Case for Prospecting',
+                content: `
+                    <p class="chapter-paragraph">The <span class="interactive-term">real secret to sustained sales success<span class="tooltip-text">Consistent, disciplined prospecting that continuously keeps the sales pipeline full.</span></span> isn't a magic bullet or a hidden tactic. It's the relentless, proactive effort to fill your pipeline. The single most significant cause of sales failure is an <span class="interactive-term">empty sales pipeline<span class="tooltip-text">A lack of qualified sales opportunities, leading to unpredictable revenue and sales slumps.</span></span>. Without new opportunities coming in, even the best closing skills are useless.</p>
+                    <p class="chapter-paragraph">Many salespeople fall into the trap of 'wishing things were easier' instead of 'working to become better.' This book challenges that mindset, advocating for a proactive approach where you take full responsibility for your pipeline, rather than waiting for leads to come to you.</p>
+                    <p class="chapter-paragraph">The idea that 'cold calling is dead' is often a convenient excuse. The truth is, the challenge isn't the 'coldness' of the call, but the salesperson's willingness to engage in the <span class="interactive-term">fine art of interrupting<span class="tooltip-text">The willingness and skill to proactively initiate contact with prospects who are not expecting outreach.</span></span>. This means being prepared to reach out to potential clients who aren't expecting your call, email, or visit, and doing so effectively.</p>
+                    <div class="embedded-question-container">
+                        <p class="question-text">What is identified as the single most significant cause of sales failure?</p>
+                        <button class="option-button" data-answer="closing skills">Poor closing skills</button>
+                        <button class="option-button" data-answer="product knowledge">Lack of product knowledge</button>
+                        <button class="option-button" data-answer="empty pipeline">An empty sales pipeline</button>
+                        <button class="option-button" data-answer="competition">High market competition</button>
+                        <p class="feedback-message"></p>
+                    </div>
+                `
+            },
+            {
+                id: 'chapter2',
+                title: 'Chapter 2: Seven Mindsets of Fanatical Prospectors',
+                content: `
+                    <p class="chapter-paragraph">Success leaves clues, and fanatical prospectors share common mindsets that set them apart. One crucial mindset is adopting a <span class="interactive-term">CEO Mindset<span class="tooltip-text">Viewing yourself as the chief executive of your own sales territory, taking full ownership and responsibility for your results and destiny.</span></span>. This means taking full ownership of your sales territory, treating it like your own business, and being accountable for your pipeline and results.</p>
+                    <p class="chapter-paragraph">Another key mindset is the <span class="interactive-term">Universal Law of Need<span class="tooltip-text">The more you, as a salesperson, need a sale, the less likely you are to get it because desperation repels prospects.</span></span>. When your pipeline is empty, desperation sets in, which prospects can sense, making them less likely to engage. A full pipeline, however, allows you to operate from a position of strength and abundance.</p>
+                    <p class="chapter-paragraph">The <span class="interactive-term">30-Day Rule<span class="tooltip-text">The prospecting activities (or lack thereof) conducted in any 30-day period will significantly impact sales results approximately 90 days later.</span></span> highlights the delayed impact of prospecting. What you do today affects your pipeline three months from now. This is closely related to the <span class="interactive-term">Law of Replacement<span class="tooltip-text">You must continuously add new qualified opportunities to your pipeline to replace those that are closed or lost.</span></span> – as deals close or fall out, you must constantly replenish your pipeline with new opportunities.</p>
+                    <p class="chapter-paragraph">Finally, fanatical prospectors 'Know Your Numbers.' They understand their conversion ratios and track their activities to ensure they are on target to meet their goals. This objective data helps them stay realistic and make necessary adjustments.</p>
+                `
+            },
+            {
+                id: 'chapter3',
+                title: 'Chapter 3: The Three Ps That Are Holding You Back',
+                content: `
+                    <p class="chapter-paragraph">Many salespeople struggle with consistent prospecting due to three common psychological hurdles: <span class="interactive-term">Procrastination<span class="tooltip-text">The habitual deferral of difficult or unpleasant prospecting tasks, such as making calls or sending emails.</span></span>, <span class="interactive-term">Perfectionism<span class="tooltip-text">An intense drive for flawlessness that leads to excessive preparation, research, and ultimately, inaction, often masking a fear of rejection or failure.</span></span>, and <span class="interactive-term">Paralysis from Analysis<span class="tooltip-text">Becoming immobilized by overthinking potential outcomes, 'what if' scenarios, and all possible objections before initiating contact.</span></span>.</p>
+                    <p class="chapter-paragraph">Procrastination is simply putting off what needs to be done. Perfectionism, while seemingly positive, can lead to endless preparation without action, driven by a fear of not being 'good enough.' Paralysis from Analysis is overthinking every possible scenario, leading to inaction. To <span class="interactive-term">disrupt the Three Ps<span class="tooltip-text">The primary method is to take direct, immediate, and often small, incremental actions, such as committing to 'make just one call, then the next'.</span></span>, the key is to take immediate, small actions, breaking the cycle of inaction.</p>
+                `
+            },
+            {
+                id: 'chapter4',
+                title: 'Chapter 4: Time: The Great Equalizer of Sales',
+                content: `
+                    <p class="chapter-paragraph">Time is the only truly equal resource among salespeople. How you manage it directly impacts your success. Fanatical prospectors understand the importance of <span class="interactive-term">Golden Hours<span class="tooltip-text">Prime selling times that should be exclusively dedicated to revenue-generating activities like active prospecting and client interactions.</span></span> – these are your peak selling times when prospects are most available and receptive. These hours should be fiercely protected for prospecting and client engagement.</p>
+                    <p class="chapter-paragraph">Conversely, <span class="interactive-term">Platinum Hours<span class="tooltip-text">Times, typically before or after Golden Hours, designated for administrative tasks, planning, and other non-revenue-generating but necessary activities.</span></span> are for administrative tasks, planning, and other non-revenue-generating activities. Effective <span class="interactive-term">Time Blocking<span class="tooltip-text">Segmenting your entire workday into dedicated, uninterrupted blocks for specific activities, especially for 'Golden Hour' prospecting.</span></span> is crucial to ensure Golden Hours are utilized for their intended purpose. Remember <span class="interactive-term">Horstman's Corollary<span class="tooltip-text">'Work contracts to fit the time allotted,' meaning concentrated effort within a time block leads to higher efficiency and output.</span></span>: work expands to fill the time allotted. By setting strict time blocks for prospecting, you increase your efficiency.</p>
+                    <p class="chapter-paragraph">Knowing your worth per hour (your income goal divided by Golden Hours) can motivate you to protect this valuable time.</p>
+                `
+            },
+            {
+                id: 'chapter5',
+                title: 'Chapter 5: Adopt a Balanced Prospecting Methodology',
+                content: `
+                    <p class="chapter-paragraph">Putting all your eggs in one basket is a fallacy in prospecting. A <span class="interactive-term">balanced prospecting methodology<span class="tooltip-text">Using a mix of prospecting channels (e.g., phone, email, social, in-person) to diversify risk and ensure a consistent flow of leads.</span></span> is crucial to diversify risk and ensure a consistent flow of leads. Relying solely on inbound leads, for example, makes you vulnerable to market fluctuations and marketing budget changes.</p>
+                    <p class="chapter-paragraph">Different channels have different strengths. <span class="interactive-term">Telephone prospecting<span class="tooltip-text">Offers high contact rates, efficiency, and the ability to get live interactions for immediate feedback. Best used in 'Power Hour' blocks.</span></span> is efficient for live interaction. Email is great for delivering information and follow-up. <span class="interactive-term">Social selling<span class="tooltip-text">Primarily used to build familiarity, gather information, and open doors for offline conversations, rather than direct closing. Involves Connecting, Content Creation, Content Curation, Conversion, Consistency.</span></span> builds familiarity and gathers intelligence. <span class="interactive-term">In-Person Prospecting (IPP)<span class="tooltip-text">Least efficient due to travel time, but highly impactful for specific, high-value scenarios, especially when utilizing the 'Hub-and-Spoke' technique.</span></span>, while less efficient, can be highly impactful for high-value targets.</p>
+                    <p class="chapter-paragraph">Leveraging the <span class="interactive-term">Prospecting Pyramid<span class="tooltip-text">A framework to segment prospects based on their potential value, opportunity size, and likelihood of conversion, allowing for prioritized outreach.</span></span> helps you prioritize your efforts on the most promising leads. Your CRM system is a vital tool to manage these diverse efforts, track interactions, and ensure no opportunity falls through the cracks.</p>
+                `
+            },
+            {
+                id: 'chapter6',
+                title: 'Chapter 6: Dealing with Gatekeepers',
+                content: `
+                    <p class="chapter-paragraph">Gatekeepers are essential for protecting decision-makers' time, but they can be a significant barrier for salespeople. The key is to view them not as adversaries, but as potential allies. The book outlines seven strategies for dealing with gatekeepers:</p>
+                    <ol class="list-decimal list-inside pl-4 chapter-paragraph">
+                        <li><strong>Be Likable:</strong> A friendly, confident demeanor goes a long way.</li>
+                        <li><strong>Use 'Please, Please':</strong> Be polite and respectful.</li>
+                        <li><strong>Be Transparent:</strong> Be honest about who you are and why you're calling.</li>
+                        <li><strong>Connect:</strong> Find common ground, build rapport.</li>
+                        <li><strong>Hold the Cheese:</strong> Don't give away all the information; create curiosity for the decision-maker.</li>
+                        <li><strong>Ask for Help:</strong> Frame your request as needing their assistance.</li>
+                        <li><strong>Change the Game (Sidestep):</strong> If necessary, find alternative routes (e.g., call at off-hours, use other channels).</li>
+                    </ol>
+                    <p class="chapter-paragraph">Remember, gatekeepers are doing their job. Your goal is to work with them, not against them, to gain access to the decision-maker.</p>
+                `
+            },
+            {
+                id: 'chapter7',
+                title: 'Chapter 7: Turning Around RBOs (Objections)',
+                content: `
+                    <p class="chapter-paragraph">In prospecting, you'll encounter <span class="interactive-term">RBOs<span class="tooltip-text">Reflex Responses (automatic, pre-programmed rejections), Brush-Offs (polite evasions), and Objections (truthful rebuttals indicating a real concern).</span></span>: Reflex Responses, Brush-Offs, and Objections. These are different forms of resistance. The key is to have a framework to handle them effectively.</p>
+                    <p class="chapter-paragraph">The <span class="interactive-term">Anchor, Disrupt, Ask<span class="tooltip-text">A three-step framework to turn around RBOs: Anchor (maintain composure), Disrupt (break their pattern), Ask (re-ask for what you want).</span></span> framework is powerful:</p>
+                    <ol class="list-decimal list-inside pl-4 chapter-paragraph">
+                        <li><strong>Anchor:</strong> Maintain your composure, manage your emotional response, and regain your poise. Don't react emotionally to the RBO.</li>
+                        <li><strong>Disrupt:</strong> Say or do something that breaks the prospect's conditioned pattern of responding or their expectation of what you will say next. This could be a surprising agreement, a question, or a statement that shifts their focus.</li>
+                        <li><strong>Ask:</strong> After anchoring and disrupting, re-ask for what you initially wanted (e.g., the appointment, the information) clearly and confidently.</li>
+                    </ol>
+                    <p class="chapter-paragraph">The <span class="interactive-term">Art of Asking<span class="tooltip-text">Involves asking with confidence, then shutting up and listening, and being prepared for RBOs.</span></span> is crucial here: ask for what you want, then shut up and listen. Be prepared for the RBO, and then apply the framework.</p>
+                `
+            },
+            {
+                id: 'chapter8',
+                title: 'Chapter 8: Mental Toughness for Sales',
+                content: `
+                    <p class="chapter-paragraph">Consistent prospecting is mentally demanding. Fanatical prospectors cultivate <span class="interactive-term">Mental Toughness<span class="tooltip-text">The ability to persevere through challenges, setbacks, and rejection, maintaining focus and drive. Built on four pillars.</span></span>, built on four pillars:</p>
+                    <ol class="list-decimal list-inside pl-4 chapter-paragraph">
+                        <li><strong>Desire:</strong> A keen, pulsating desire that is the starting point of all achievement and fuels consistent action.</li>
+                        <li><strong>Mental Resilience:</strong> Continuously learning and 'sharpening the saw' through reading, audio programs, and workshops.</li>
+                        <li><strong>Physical Resilience:</strong> Maintaining energy and stamina through regular exercise, adequate sleep, and healthy eating.</li>
+                        <li><strong>Feed Your Attitude:</strong> Proactively managing your social circles, controlling self-talk, curating input (what you read/watch), and practicing gratitude.</li>
+                    </ol>
+                    <p class="chapter-paragraph">The <span class="interactive-term">'One More Call' mantra<span class="tooltip-text">When it's time to go home, make one more call to instill discipline, extend effort, and often lead to 'sales serendipity' (unexpected positive outcomes).</span></span> embodies this mental toughness, pushing you just a little further. Remember the <span class="interactive-term">Rule of Thirds<span class="tooltip-text">Approximately one-third of prospects will say 'yes,' one-third will say 'no,' and one-third will give an RBO (maybe/objection). Helps manage expectations.</span></span>: expect a mix of responses, and don't let 'no' deter you. Ultimately, the book asks: <span class="interactive-term">'How bad do you want it?'<span class="tooltip-text'>The ultimate question that transcends talent, resources, and experience, highlighting the fundamental drive and commitment required for sales success.</span></span> – this is the true measure of a fanatical prospector.</p>
+                `
+            },
+            {
+                id: 'conclusion',
+                title: 'Conclusion: The Ultimate Fanatical Prospector',
+                content: `
+                    <p class="chapter-paragraph">You've explored the core principles of Fanatical Prospecting. It's not about being aggressive or manipulative; it's about being proactive, disciplined, and resilient. By mastering your mindset, managing your time effectively, leveraging multiple channels, and skillfully handling resistance, you can ensure your pipeline remains full and your sales career thrives.</p>
+                    <p class="chapter-paragraph">Remember, prospecting is a continuous activity, not a one-time event. Embrace the journey, learn from every interaction, and commit to consistent, fanatical effort. Your sales success is in your hands!</p>
+                    <p class="chapter-paragraph text-center font-bold mt-8 text-sky-700">Go forth and prospect fanatically!</p>
+                `
+            }
+        ];
+
+        function renderPage(index) {
+            if (index < 0 || index >= pages.length) return;
+
+            const page = pages[index];
+            ebookContentDiv.innerHTML = `
+                <h2 class="chapter-title">${page.title}</h2>
+                ${page.content}
+            `;
+            pageIndicator.textContent = `Page ${index + 1} of ${pages.length}`;
+
+            prevButton.disabled = index === 0;
+            nextButton.disabled = index === pages.length - 1;
+
+            // Add event listeners for embedded questions on the current page
+            addQuestionListeners();
+        }
+
+        function navigatePage(direction) {
+            ebookContentDiv.classList.add('page-exit-active'); // Start exit animation
+
+            setTimeout(() => {
+                currentPageIndex += direction;
+                renderPage(currentPageIndex);
+                ebookContentDiv.classList.remove('page-exit-active');
+                ebookContentDiv.classList.add('page-enter-active'); // Start enter animation
+                setTimeout(() => {
+                    ebookContentDiv.classList.remove('page-enter-active');
+                }, 600); // Remove active class after animation
+            }, 600); // Wait for exit animation to complete
+        }
+
+        function jumpToPage(index) {
+            if (index === currentPageIndex) return; // Already on this page
+
+            ebookContentDiv.classList.add('page-exit-active'); // Start exit animation
+
+            setTimeout(() => {
+                currentPageIndex = index;
+                renderPage(currentPageIndex);
+                ebookContentDiv.classList.remove('page-exit-active');
+                ebookContentDiv.classList.add('page-enter-active'); // Start enter animation
+                setTimeout(() => {
+                    ebookContentDiv.classList.remove('page-enter-active');
+                }, 600); // Remove active class after animation
+            }, 600); // Wait for exit animation to complete
+        }
+
+        function addQuestionListeners() {
+            const questionContainer = ebookContentDiv.querySelector('.embedded-question-container');
+            if (questionContainer) {
+                const options = questionContainer.querySelectorAll('.option-button');
+                const feedback = questionContainer.querySelector('.feedback-message');
+                let answered = false;
+
+                options.forEach(button => {
+                    button.addEventListener('click', function() {
+                        if (answered) return;
+                        answered = true;
+
+                        const correctAnswer = "empty pipeline"; // Hardcoded for this specific question example
+                        const userAnswer = this.dataset.answer;
+
+                        options.forEach(opt => {
+                            if (opt.dataset.answer === correctAnswer) {
+                                opt.classList.add('correct');
+                            } else {
+                                opt.classList.add('incorrect');
+                            }
+                            opt.disabled = true; // Disable all options after selection
+                        });
+
+                        if (userAnswer === correctAnswer) {
+                            feedback.textContent = "Correct! You got it.";
+                            feedback.classList.add('text-green-600');
+                            feedback.classList.remove('text-red-600');
+                        } else {
+                            feedback.textContent = `Incorrect. The correct answer was: "${correctAnswer}".`;
+                            feedback.classList.add('text-red-600');
+                            feedback.classList.remove('text-green-600');
+                        }
+                    });
+                });
+            }
+        }
+
+        prevButton.addEventListener('click', () => navigatePage(-1));
+        nextButton.addEventListener('click', () => navigatePage(1));
+
+        tocLinks.forEach((link, index) => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default anchor jump
+                const targetId = link.getAttribute('href').substring(1);
+                const targetPageIndex = pages.findIndex(p => p.id === targetId);
+                if (targetPageIndex !== -1) {
+                    jumpToPage(targetPageIndex);
+                }
+            });
+        });
+
+        // Initial render
+        renderPage(currentPageIndex);
+    </script>
+</body>
+</html>

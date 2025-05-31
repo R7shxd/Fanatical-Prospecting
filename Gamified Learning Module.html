@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanatical Prospecting: The Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-y: auto; }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded */
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 800px;
+            width: 95%; /* Fluid width */
+            margin: 2rem auto; /* Center with margin */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .score-display, .level-display {
+            background-color: #e0f2fe; /* sky-100 */
+            color: #0c4a6e; /* sky-900 */
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0; /* slate-200 */
+            border-radius: 0.75rem;
+            height: 1.25rem;
+            margin-top: 1.5rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #22c55e; /* emerald-500 */
+            border-radius: 0.75rem;
+            transition: width 0.5s ease-in-out;
+        }
+        .question-area {
+            width: 100%;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .question-text {
+            font-size: 1.75rem; /* Bigger font for questions */
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column for mobile */
+            gap: 1rem;
+            width: 100%;
+        }
+        @media (min-width: 640px) { /* Small screens and up */
+            .options-grid {
+                grid-template-columns: repeat(2, 1fr); /* Two columns for larger screens */
+            }
+        }
+        .option-button {
+            background-color: #f0f9ff; /* sky-50 */
+            border: 2px solid #93c5fd; /* blue-300 */
+            color: #1e3a8a; /* blue-900 */
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .option-button:hover {
+            background-color: #dbeafe; /* blue-100 */
+            border-color: #60a5fa; /* blue-400 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.1);
+        }
+        .option-button.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #4ade80; /* green-400 */
+            color: #166534; /* green-900 */
+        }
+        .option-button.incorrect {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #f87171; /* red-400 */
+            color: #991b1b; /* red-900 */
+        }
+        .feedback-message {
+            margin-top: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            min-height: 2rem;
+        }
+        .next-button {
+            background-color: #0ea5e9; /* sky-500 */
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .next-button:hover {
+            background-color: #0284c7; /* sky-600 */
+            transform: translateY(-1px);
+        }
+        .game-over-screen, .intro-screen {
+            text-align: center;
+            padding: 2rem;
+            width: 100%;
+        }
+        .game-over-screen h2, .intro-screen h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #0c4a6e;
+            margin-bottom: 1.5rem;
+        }
+        .game-over-screen p, .intro-screen p {
+            font-size: 1.125rem;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+        .badge-display {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .badge-item {
+            background-color: #f0f9ff; /* sky-50 */
+            border: 1px solid #bae6fd; /* sky-200 */
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #0c4a6e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.6;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .badge-item.unlocked {
+            background-color: #dbeafe; /* blue-100 */
+            border-color: #60a5fa; /* blue-400 */
+            opacity: 1;
+            color: #1e3a8a;
+        }
+        .badge-icon {
+            font-size: 1.5rem;
+            color: #93c5fd; /* blue-300 */
+        }
+        .badge-item.unlocked .badge-icon {
+            color: #2563eb; /* blue-600 */
+        }
+        .start-button {
+            background-color: #10b981; /* emerald-500 */
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 2rem;
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        .start-button:hover {
+            background-color: #059669; /* emerald-600 */
+            transform: translateY(-2px);
+        }
+        .restart-button {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .restart-button:hover {
+            background-color: #dc2626; /* red-600 */
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div id="intro-screen" class="intro-screen">
+            <h2 class="text-sky-700">Welcome to Fanatical Prospecting: The Game!</h2>
+            <p>Master the art of sales prospecting by tackling challenges and earning rewards.</p>
+            <p class="mt-4">Answer questions correctly to earn points and unlock special badges. Your goal is to complete all levels and become a true Fanatical Prospector!</p>
+            <button id="start-game-button" class="start-button">Start Your Journey!</button>
+        </div>
+
+        <div id="game-screen" style="display: none;">
+            <div class="game-header">
+                <div class="score-display">
+                    <i class="fas fa-star"></i> <span id="score">0</span> Points
+                </div>
+                <div class="level-display">
+                    Level <span id="current-level">1</span> / <span id="total-levels"></span>
+                </div>
+            </div>
+
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+
+            <div class="question-area">
+                <p id="question-text" class="question-text"></p>
+                <div id="options-container" class="options-grid">
+                    </div>
+                <p id="feedback-message" class="feedback-message text-center"></p>
+                <button id="next-button" class="next-button" style="display: none;">Next Challenge <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+
+            <div class="badge-display">
+                <h3>Your Badges:</h3>
+                <div id="badges-container" class="flex flex-wrap justify-center gap-4 mt-2">
+                    </div>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="game-over-screen" style="display: none;">
+            <h2 class="text-sky-700">Game Over!</h2>
+            <p class="text-lg font-semibold">You completed all challenges!</p>
+            <p class="text-xl font-bold mt-4">Final Score: <span id="final-score">0</span> Points</p>
+            <p class="text-lg mt-2">Badges Earned:</p>
+            <div id="final-badges-container" class="flex flex-wrap justify-center gap-4 mt-2">
+                </div>
+            <button id="restart-game-button" class="restart-button">Play Again <i class="fas fa-redo-alt ml-2"></i></button>
+        </div>
+    </div>
+
+    <script>
+        // Game state variables
+        let currentScore = 0;
+        let currentLevelIndex = 0;
+        let answeredCorrectlyOnCurrentLevel = false;
+        let unlockedBadges = {}; // Object to store unlocked badges by ID
+
+        // Game elements
+        const introScreen = document.getElementById('intro-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startGameButton = document.getElementById('start-game-button');
+        const restartGameButton = document.getElementById('restart-game-button');
+
+        const scoreDisplay = document.getElementById('score');
+        const currentLevelDisplay = document.getElementById('current-level');
+        const totalLevelsDisplay = document.getElementById('total-levels');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const nextButton = document.getElementById('next-button');
+        const badgesContainer = document.getElementById('badges-container');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const finalBadgesContainer = document.getElementById('final-badges-container');
+
+        // Game Content (Questions and Badges)
+        const gameLevels = [
+            {
+                id: 'core-principles',
+                question: "What is the single most significant cause of sales failure, according to Fanatical Prospecting?",
+                options: [
+                    { text: "Poor closing skills", isCorrect: false },
+                    { text: "Lack of product knowledge", isCorrect: false },
+                    { text: "An empty sales pipeline", isCorrect: true },
+                    { text: "High market competition", isCorrect: false }
+                ],
+                points: 100,
+                badgeId: 'pipeline-master'
+            },
+            {
+                id: 'psychological-hurdles',
+                question: "Which of the 'Three Ps' involves excessive preparation, research, and ultimately inaction, often masking a fear of failure?",
+                options: [
+                    { text: "Procrastination", isCorrect: false },
+                    { text: "Perfectionism", isCorrect: true },
+                    { text: "Paralysis from Analysis", isCorrect: false },
+                    { text: "Persistence", isCorrect: false }
+                ],
+                points: 100,
+                badgeId: 'mindset-champion'
+            },
+            {
+                id: 'time-management',
+                question: "What are 'Golden Hours' in sales time management primarily dedicated to?",
+                options: [
+                    { text: "Administrative tasks and email sorting", isCorrect: false },
+                    { text: "Personal development and training", isCorrect: false },
+                    { text: "Revenue-generating activities like active prospecting and client interactions", isCorrect: true },
+                    { text: "Team meetings and internal planning", isCorrect: false }
+                ],
+                points: 100,
+                badgeId: 'time-wizard'
+            },
+            {
+                id: 'law-of-need',
+                question: "What does the 'Universal Law of Need' state for a salesperson?",
+                options: [
+                    { text: "The more you need a sale, the more likely you are to get it.", isCorrect: false },
+                    { text: "Prospects only buy when they have an urgent need.", isCorrect: false },
+                    { text: "The more you need a sale, the less likely you are to get it, as desperation repels prospects.", isCorrect: true },
+                    { text: "You must always create a need for your product in the prospect's mind.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: '30-day-rule',
+                question: "According to the '30-Day Rule', when do prospecting activities (or lack thereof) typically impact sales results?",
+                options: [
+                    { text: "Immediately, within the same month.", isCorrect: false },
+                    { text: "Approximately 30 days later.", isCorrect: false },
+                    { text: "Approximately 90 days later.", isCorrect: true },
+                    { text: "After six months or more.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'law-of-replacement',
+                question: "The 'Law of Replacement' emphasizes that salespeople must continually do what?",
+                options: [
+                    { text: "Replace old sales scripts with new ones.", isCorrect: false },
+                    { text: "Replace underperforming team members.", isCorrect: false },
+                    { text: "Add new qualified opportunities to their pipeline to replace those that close or fall out.", isCorrect: true },
+                    { text: "Replace unsuccessful prospecting channels.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'disrupting-3ps',
+                question: "What is the primary method recommended for 'Disrupting the Three Ps'?",
+                options: [
+                    { text: "Waiting for inspiration to strike.", isCorrect: false },
+                    { text: "Taking direct, immediate, and often small, incremental actions.", isCorrect: true },
+                    { text: "Engaging in extensive planning before any action.", isCorrect: false },
+                    { text: "Delegating all prospecting tasks to others.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'channel-mix',
+                question: "What is the recommended approach to using various prospecting channels (phone, email, social)?",
+                options: [
+                    { text: "Choose one primary channel and master it exclusively.", isCorrect: false },
+                    { text: "Focus solely on the newest and most technologically advanced channels.", isCorrect: false },
+                    { text: "Use a balanced mix of channels to diversify risk and ensure consistent lead flow.", isCorrect: true },
+                    { text: "Only use channels that guarantee a 100% success rate.", isCorrect: false }
+                ],
+                points: 100,
+                badgeId: 'channel-navigator'
+            },
+            {
+                id: 'rbo-turnaround',
+                question: "What is the framework for turning around RBOs (Reflex Responses, Brush-Offs, Objections)?",
+                options: [
+                    { text: "Listen, Empathize, Offer Solution", isCorrect: false },
+                    { text: "Anchor, Disrupt, Ask", isCorrect: true },
+                    { text: "Question, Justify, Persuade", isCorrect: false },
+                    { text: "Apologize, Retreat, Re-approach", isCorrect: false }
+                ],
+                points: 100,
+                badgeId: 'rbo-master'
+            },
+            {
+                id: 'anchor-step',
+                question: "In the 'Anchor, Disrupt, Ask' framework, what does 'Anchor' primarily involve?",
+                options: [
+                    { text: "Anchoring the prospect to a specific pain point.", isCorrect: false },
+                    { text: "The salesperson maintaining composure and managing their emotional response.", isCorrect: true },
+                    { text: "Referring back to a previous agreement.", isCorrect: false },
+                    { text: "Quickly anchoring the conversation to your product's USP.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'disrupt-step',
+                question: "What is the primary goal of the 'Disrupt' step in the RBO turnaround framework?",
+                options: [
+                    { text: "To disrupt the prospect's current workflow.", isCorrect: false },
+                    { text: "To break the prospect's conditioned pattern of responding or their expectation.", isCorrect: true },
+                    { text: "To introduce a completely unrelated topic.", isCorrect: false },
+                    { text: "To aggressively challenge the prospect's objection.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'ask-step',
+                question: "In the RBO Turnaround Framework, what does 'Ask' involve?",
+                options: [
+                    { text: "Asking a series of qualifying questions.", isCorrect: false },
+                    { text: "Re-asking for what you initially wanted clearly and confidently.", isCorrect: true },
+                    { text: "Asking for permission to continue the conversation.", isCorrect: false },
+                    { text: "Asking the prospect if they have any further objections.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'mental-toughness',
+                question: "Which of these is NOT one of the 'Four Pillars of Mental Toughness'?",
+                options: [
+                    { text: "Desire", isCorrect: false },
+                    { text: "Innate Talent", isCorrect: true },
+                    { text: "Physical Resilience", isCorrect: false },
+                    { text: "Feed Your Attitude", isCorrect: false }
+                ],
+                points: 100,
+                badgeId: 'tough-mind'
+            },
+            {
+                id: 'one-more-call',
+                question: "The 'One More Call' mantra is primarily designed to cultivate:",
+                options: [
+                    { text: "A competitive edge over colleagues.", isCorrect: false },
+                    { text: "Discipline, extended effort, and often lead to 'sales serendipity'.", isCorrect: true },
+                    { text: "A way to quickly meet daily call quotas.", isCorrect: false },
+                    { text: "An alternative to making early morning calls.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'rule-of-thirds',
+                question: "The 'Rule of Thirds' in prospecting suggests that when you make outreach attempts:",
+                options: [
+                    { text: "You should spend one-third of your time researching.", isCorrect: false },
+                    { text: "Approximately one-third will say 'yes', one-third 'no', and one-third give an RBO.", isCorrect: true },
+                    { text: "You should contact each prospect at least three times.", isCorrect: false },
+                    { text: "Only one-third of qualified leads will convert.", isCorrect: false }
+                ],
+                points: 100
+            },
+            {
+                id: 'ultimate-question',
+                question: "What is the ultimate question Jeb Blount poses, core to sales success, that 'transcends talent, resources, experience'?",
+                options: [
+                    { text: "Do you have the right product?", isCorrect: false },
+                    { text: "How bad do you want it?", isCorrect: true },
+                    { text: "Are you a natural-born salesperson?", isCorrect: false },
+                    { text: "What is your current closing ratio?", isCorrect: false }
+                ],
+                points: 100,
+                badgeId: 'fanatical-prospector'
+            }
+            // Add more levels/questions here to reach 100+
+            // Example structure for more questions:
+            // {
+            //     id: 'new-topic-1',
+            //     question: "What is the primary benefit of a 'Balanced Prospecting Methodology'?",
+            //     options: [
+            //         { text: "It simplifies the sales process by limiting focus.", isCorrect: false },
+            //         { text: "It ensures a consistent flow of leads by diversifying risk across multiple channels.", isCorrect: true },
+            //         { text: "It allows salespeople to avoid uncomfortable methods.", isCorrect: false },
+            //         { text: "It focuses exclusively on inbound leads.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'crm-role',
+            //     question: "How is the CRM system described in the context of prospecting?",
+            //     options: [
+            //         { text: "An automated tool that entirely replaces manual prospecting.", isCorrect: false },
+            //         { text: "Primarily a reporting tool for sales managers.", isCorrect: false },
+            //         { text: "A system for managing prospect details, tasks, and relationships to facilitate and enhance prospecting efforts.", isCorrect: true },
+            //         { text: "A platform exclusively for storing closed deal information.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'law-of-familiarity',
+            //     question: "According to Fanatical Prospecting, what is the 'Law of Familiarity'?",
+            //     options: [
+            //         { text: "Salespeople should only prospect industries they are familiar with.", isCorrect: false },
+            //         { text: "The more a prospect knows you, your brand, or company, the more likely they are to respond positively.", isCorrect: true },
+            //         { text: "It is unlawful to contact prospects repeatedly.", isCorrect: false },
+            //         { text: "Building deep product familiarity is more important than rapport.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'core-objectives',
+            //     question: "What are the four core objectives that every prospecting interaction should aim to achieve?",
+            //     options: [
+            //         { text: "Making a sale, getting a referral, collecting payment, and building rapport.", isCorrect: false },
+            //         { text: "Setting an Appointment, Gathering Information and Qualifying, Closing the Sale (where appropriate), and Building Familiarity.", isCorrect: true },
+            //         { text: "Delivering a perfect pitch, overcoming all objections, demonstrating product value, and asking for the order.", isCorrect: false },
+            //         { text: "Identifying needs, presenting solutions, handling complaints, and managing accounts.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'telephone-advantages',
+            //     question: "What are some key advantages of telephone prospecting?",
+            //     options: [
+            //         { text: "It offers the highest conversion rates from cold contact.", isCorrect: false },
+            //         { text: "Low contact rates, but very high engagement.", isCorrect: false },
+            //         { text: "High contact rates, efficiency, and the ability to get live interactions.", isCorrect: true },
+            //         { text: "It requires minimal preparation and offers flexibility to call anytime.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'power-hour',
+            //     question: "What is a recommended strategy for increasing success in telephone prospecting?",
+            //     options: [
+            //         { text: "Making calls only when highly motivated.", isCorrect: false },
+            //         { text: "Implementing daily 1-2 hour 'Power Hour' phone blocks, free from distractions.", isCorrect: true },
+            //         { text: "Outsourcing all initial telephone calls.", isCorrect: false },
+            //         { text: "Focusing solely on calling referrals.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'phone-call-steps',
+            //     question: "What are the five essential steps of an effective telephone prospecting call?",
+            //     options: [
+            //         { text: "Open with a joke, Introduce yourself, Explain your product, Ask for the sale, Handle objections.", isCorrect: false },
+            //         { text: "Get their attention, Identify yourself, Tell them why you are calling, Bridge, Ask for what you want and shut up.", isCorrect: true },
+            //         { text: "Build rapport, Discover needs, Present solution, Address concerns, Close the deal.", isCorrect: false },
+            //         { text: "Ask permission to speak, Verify contact info, Qualify, Set follow-up, End politely.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'voicemail-objective',
+            //     question: "What is the primary objective of an effective voicemail in prospecting?",
+            //     options: [
+            //         { text: "To deliver a complete, compelling sales pitch.", isCorrect: false },
+            //         { text: "To secure a callback or build familiarity.", isCorrect: true },
+            //         { text: "To inform the prospect of all your product's features.", isCorrect: false },
+            //         { text: "To replace the need for follow-up emails.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'social-selling-5cs',
+            //     question: "What are the 'Five Cs' that form the framework for effective social selling?",
+            //     options: [
+            //         { text: "Clarity, Conciseness, Conviction, Consistency, Closing.", isCorrect: false },
+            //         { text: "Connecting, Content Creation, Content Curation, Conversion, Consistency.", isCorrect: true },
+            //         { text: "Customers, Channels, Competition, Campaigns, Communication.", isCorrect: false },
+            //         { text: "Calling, Contacting, Converting, Cultivating, Committing.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'email-3-rules',
+            //     question: "What are the 'Three Cardinal Rules' for effective email prospecting?",
+            //     options: [
+            //         { text: "Short, visually appealing, include discount.", isCorrect: false },
+            //         { text: "Get delivered, Get opened, Convert.", isCorrect: true },
+            //         { text: "Sent to 100+, trackable, followed up within 24 hours.", isCorrect: false },
+            //         { text: "Perfect grammar, personalized, no attachments.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'email-framework',
+            //     question: "What are the four essential elements of an effective prospecting email framework?",
+            //     options: [
+            //         { text: "Subject Line, Body, Call to Action, Signature.", isCorrect: false },
+            //         { text: "Hook, Relate, Bridge, Ask.", isCorrect: true },
+            //         { text: "Problem, Solution, Testimonial, Urgency.", isCorrect: false },
+            //         { text: "Introduction, Value Proposition, Features & Benefits, Closing.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'text-messaging-char',
+            //     question: "What is the unique characteristic of text messaging as a prospecting channel?",
+            //     options: [
+            //         { text: "Low read rates but high memorability.", isCorrect: false },
+            //         { text: "High read and response rates, but with a significant risk of perceived intrusion.", isCorrect: true },
+            //         { text: "Ideal for delivering complex information.", isCorrect: false },
+            //         { text: "Only to be used as a last resort.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'text-messaging-rules',
+            //     question: "What are the rules for effective text prospecting messages?",
+            //     options: [
+            //         { text: "Keep it casual, use abbreviations, include multiple links.", isCorrect: false },
+            //         { text: "Identify yourself, message matters, be direct and brief, avoid abbreviations, use transparent links, pause before sending, know your numbers.", isCorrect: true },
+            //         { text: "Start with a question, provide detailed explanation, use emojis.", isCorrect: false },
+            //         { text: "Get attention, identify, state purpose, bridge, and ask.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'ipp-steps',
+            //     question: "What are the five steps of an effective In-Person Prospecting (IPP) call?",
+            //     options: [
+            //         { text: "Knock loudly, State your business, Leave a brochure, Ask for a callback, Depart quickly.", isCorrect: false },
+            //         { text: "Approaching with confidence, identifying yourself, gathering information, asking for what you want, and turning around objections.", isCorrect: true },
+            //         { text: "Scheduling in advance, preparing a full presentation, conducting a needs analysis, offering a demo, closing the sale.", isCorrect: false },
+            //         { text: "Observing the environment, waiting for an opening, complimenting the business, leaving a card, and asking for a referral.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'ipp-characteristic',
+            //     question: "What is a key characteristic of In-Person Prospecting (IPP)?",
+            //     options: [
+            //         { text: "It is the most efficient method due to immediate face-to-face connection.", isCorrect: false },
+            //         { text: "It is the least efficient due to travel time, but can be highly impactful in specific, high-value scenarios.", isCorrect: true },
+            //         { text: "It is best suited for mass outreach and generating high volume leads.", isCorrect: false },
+            //         { text: "It completely negates the need for any other prospecting channels.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'gatekeeper-strategies',
+            //     question: "What are the seven key strategies for effectively dealing with gatekeepers?",
+            //     options: [
+            //         { text: "Be Aggressive, Demand Access, Lie, Ignore, Threaten, Bypass, Complain.", isCorrect: false },
+            //         { text: "Be Likable, Use 'Please, Please', Be Transparent, Connect, Hold the Cheese, Ask for Help, Change the Game (Sidestep).", isCorrect: true },
+            //         { text: "Bribe them, Flatter excessively, Impersonate, Call after hours, Pretend to be delivery, Spy, Manipulate.", isCorrect: false },
+            //         { text: "Ask direct questions, Get their name, Build rapport, Qualify, Ask for transfer, Thank, Follow up.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'gatekeeper-role',
+            //     question: "What is the primary role of a gatekeeper in a company?",
+            //     options: [
+            //         { text: "To identify and qualify all incoming sales leads.", isCorrect: false },
+            //         { text: "To protect decision-makers' time and filter incoming contacts.", isCorrect: true },
+            //         { text: "To handle customer service inquiries.", isCorrect: false },
+            //         { text: "To direct all sales inquiries to the appropriate department.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'gatekeeper-hacks',
+            //     question: "Which of the following are described as 'Gatekeeper Hacks'?",
+            //     options: [
+            //         { text: "Calling during non-business hours or using a direct dial.", isCorrect: false },
+            //         { text: "Sending a detailed email to the gatekeeper to forward.", isCorrect: false },
+            //         { text: "Calling random extensions or calling the company's sales department for internal info.", isCorrect: true },
+            //         { text: "Pretending to be a current client or friend of the decision-maker.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'enthusiasm-significance',
+            //     question: "What is the significance of 'Enthusiasm' in the opening seconds of a sales conversation?",
+            //     options: [
+            //         { text: "It can make the salesperson appear unprofessional.", isCorrect: false },
+            //         { text: "It is one of the most persuasive nonverbal messages, conveying belief and positivity.", isCorrect: true },
+            //         { text: "It should be suppressed for a formal demeanor.", isCorrect: false },
+            //         { text: "It is only effective if the prospect is already in a good mood.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'bridging-messaging',
+            //     question: "In sales messaging, what does 'Bridging' refer to?",
+            //     options: [
+            //         { text: "Building a bridge between two sales territories.", isCorrect: false },
+            //         { text: "Clearly connecting a prospect's problem or need to your solution (WIIFM).", isCorrect: true },
+            //         { text: "The transition phase between sales stages.", isCorrect: false },
+            //         { text: "Establishing a metaphorical bridge of trust.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'art-of-asking',
+            //     question: "What are the three essential steps in 'The Art of Asking' during a prospecting interaction?",
+            //     options: [
+            //         { text: "Ask politely, Give detailed explanation, Confirm understanding.", isCorrect: false },
+            //         { text: "Ask with confidence, Shut up and listen, and Be prepared for RBOs.", isCorrect: true },
+            //         { text: "Ask open-ended questions, Ask clarifying questions, Ask for a referral.", isCorrect: false },
+            //         { text: "Ask for the sale early, Repeat the ask, Overcome hesitation.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'rbo-types',
+            //     question: "What do 'RBOs' (Reflex Responses, Brush-Offs, Objections) represent?",
+            //     options: [
+            //         { text: "Reflexive Buying Opportunities, Best Offers, Online Sales.", isCorrect: false },
+            //         { text: "Ready-to-Buy Opportunities, Big Obstacles, Sales Barriers.", isCorrect: false },
+            //         { text: "Reflex Responses (automatic), Brush-Offs (polite evasions), and Objections (truthful rebuttals).", isCorrect: true },
+            //         { text: "Reasons for Being Out of business, Budgetary Overruns, Missed Quotas.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'mental-toughness-desire',
+            //     question: "In the context of Mental Toughness, what is meant by 'Desire'?",
+            //     options: [
+            //         { text: "A strong wish to have more prospects.", isCorrect: false },
+            //         { text: "A keen, pulsating desire that is the starting point of all achievement.", isCorrect: true },
+            //         { text: "The need to be desired by prospects.", isCorrect: false },
+            //         { text: "The competitive desire to outperform colleagues.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'mental-resilience-cultivation',
+            //     question: "How is 'Mental Resilience' (as a pillar of mental toughness) primarily cultivated?",
+            //     options: [
+            //         { text: "By avoiding challenging sales situations.", isCorrect: false },
+            //         { text: "Through continuously learning and 'sharpening the saw'.", isCorrect: true },
+            //         { text: "By ignoring negative feedback.", isCorrect: false },
+            //         { text: "By taking frequent breaks.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'physical-resilience-elements',
+            //     question: "What are the foundational elements of 'Physical Resilience'?",
+            //     options: [
+            //         { text: "Having a naturally strong immune system.", isCorrect: false },
+            //         { text: "Relying on energy drinks and caffeine.", isCorrect: false },
+            //         { text: "Regular exercise, adequate sleep, and healthy eating.", isCorrect: true },
+            //         { text: "Engaging in extreme sports.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'feed-attitude',
+            //     question: "How can a salesperson 'Feed Your Attitude' to cultivate a positive outlook?",
+            //     options: [
+            //         { text: "By only associating with top-performing salespeople.", isCorrect: false },
+            //         { text: "By avoiding any negative news.", isCorrect: false },
+            //         { text: "By managing social circles, controlling self-talk, curating input, and practicing gratitude.", isCorrect: true },
+            //         { text: "By constantly listening to motivational speakers without applying principles.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'sales-serendipity',
+            //     question: "What is the primary characteristic of 'sales serendipity'?",
+            //     options: [
+            //         { text: "The planned, predictable outcome of a strategy.", isCorrect: false },
+            //         { text: "An unexpected, fortunate discovery or positive outcome from extended effort.", isCorrect: true },
+            //         { text: "The luck of getting a referral without asking.", isCorrect: false },
+            //         { text: "The ability to instinctively know when a prospect is ready to buy.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'law-of-average',
+            //     question: "What is 'The Law of Average' as it applies to prospecting?",
+            //     options: [
+            //         { text: "For every X attempts, you will get Y results, making outcomes predictable.", isCorrect: true },
+            //         { text: "Salespeople should aim for average performance.", isCorrect: false },
+            //         { text: "The average salesperson makes X calls per day.", isCorrect: false },
+            //         { text: "You should only prospect for average-sized deals.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'tracking-numbers',
+            //     question: "Why is 'Tracking Your Numbers' essential for a Fanatical Prospector?",
+            //     options: [
+            //         { text: "It allows sales managers to monitor and micro-manage.", isCorrect: false },
+            //         { text: "It provides objective data to identify strengths, weaknesses, and enable adjustments.", isCorrect: true },
+            //         { text: "It is a mandatory requirement regardless of utility.", isCorrect: false },
+            //         { text: "It helps justify why goals were not met due to external factors.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'sales-eq',
+            //     question: "What is 'Sales EQ' in the context of prospecting?",
+            //     options: [
+            //         { text: "The ability to quickly calculate sales quotas.", isCorrect: false },
+            //         { text: "The salesperson's emotional quotient, understanding and influencing human emotions.", isCorrect: true },
+            //         { text: "The quality of sales leads generated.", isCorrect: false },
+            //         { text: "The speed at which a salesperson can respond.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'discipline-crucial',
+            //     question: "Why is 'Discipline' emphasized as crucial for a fanatical prospector?",
+            //     options: [
+            //         { text: "Because prospecting is an inherently easy task.", isCorrect: false },
+            //         { text: "Because prospecting is often uncomfortable, requires consistent effort even when motivation is low, and yields delayed gratification.", isCorrect: true },
+            //         { text: "Because it ensures all prospecting activities are perfectly executed.", isCorrect: false },
+            //         { text: "Because it allows salespeople to avoid prospecting altogether.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'activity-vs-outcome',
+            //     question: "What is the difference between 'Activity Goals' and 'Outcome Goals' in prospecting?",
+            //     options: [
+            //         { text: "Activity goals are set by management, outcome by salesperson.", isCorrect: false },
+            //         { text: "Activity goals are controllable actions, outcome goals are results less directly controllable but influenced by activity.", isCorrect: true },
+            //         { text: "Activity goals are short-term, outcome goals are long-term.", isCorrect: false },
+            //         { text: "Activity goals focus on quality, outcome goals on quantity.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'trigger-events',
+            //     question: "What is the primary purpose of 'Trigger Events' in prospecting?",
+            //     options: [
+            //         { text: "To trigger automated responses in CRM systems.", isCorrect: false },
+            //         { text: "To identify relevant and timely opportunities to initiate contact based on changes within their company or industry.", isCorrect: true },
+            //         { text: "To trigger a prospect's emotional response.", isCorrect: false },
+            //         { text: "To trigger internal alarms when falling behind quota.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'lead-scoring',
+            //     question: "What is 'Lead Scoring' and how does it relate to prospecting?",
+            //     options: [
+            //         { text: "A method of scoring how many leads a salesperson generates.", isCorrect: false },
+            //         { text: "A methodology used to rank prospects based on their likelihood of converting, helping prioritize efforts.", isCorrect: true },
+            //         { text: "A system for scoring the quality of marketing campaigns.", isCorrect: false },
+            //         { text: "The process of giving feedback to leads.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'transparency-importance',
+            //     question: "Why is 'transparency' important when initiating contact, especially with 'cold' prospects?",
+            //     options: [
+            //         { text: "It allows you to quickly get to the point.", isCorrect: false },
+            //         { text: "It builds trust and reduces suspicion by being honest about who you are and why you are calling.", isCorrect: true },
+            //         { text: "It ensures prospects have all info for immediate purchase.", isCorrect: false },
+            //         { text: "It is a legal requirement.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'micro-commitments',
+            //     question: "What is the concept of 'Micro-Commitments' in the sales process?",
+            //     options: [
+            //         { text: "Committing to make a fixed number of calls.", isCorrect: false },
+            //         { text: "Asking for small, low-risk agreements or actions from prospects to build momentum.", isCorrect: true },
+            //         { text: "Making small, non-binding promises to prospects.", isCorrect: false },
+            //         { text: "Committing to a small budget for sales tools.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'active-listening',
+            //     question: "Why is 'Active Listening' emphasized as crucial during prospecting interactions?",
+            //     options: [
+            //         { text: "To quickly identify keywords for automated sequences.", isCorrect: false },
+            //         { text: "To fully concentrate on what the prospect is saying to understand their needs and tailor responses.", isCorrect: true },
+            //         { text: "To wait for pauses to interject your pitch.", isCorrect: false },
+            //         { text: "To gather info to determine if prospect is worth your time.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'open-ended-questions',
+            //     question: "What is the significance of 'Asking Open-Ended Questions' during prospecting?",
+            //     options: [
+            //         { text: "They allow you to quickly qualify with 'yes' or 'no'.", isCorrect: false },
+            //         { text: "They encourage prospects to provide detailed information, revealing underlying needs.", isCorrect: true },
+            //         { text: "They are primarily used to confirm information you already know.", isCorrect: false },
+            //         { text: "They demonstrate your expertise by asking complex questions.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'lead-vs-qualified',
+            //     question: "What is the key difference between a 'Lead' and a 'Qualified Prospect'?",
+            //     options: [
+            //         { text: "A 'lead' is anyone with contact info; a 'qualified prospect' engaged marketing content.", isCorrect: false },
+            //         { text: "A 'lead' is a potential customer identified by marketing; a 'qualified prospect' is someone salesperson believes will definitely buy.", isCorrect: false },
+            //         { text: "A 'lead' is generally just a contact; a 'qualified prospect' has been vetted against specific criteria (BANT).", isCorrect: true },
+            //         { text: "A 'lead' is an existing customer; a 'qualified prospect' is a new customer.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'abc-reframing',
+            //     question: "What is the reframing of 'The ABC of Selling' (Always Be Closing) in Fanatical Prospecting?",
+            //     options: [
+            //         { text: "Always Be Collecting (information).", isCorrect: false },
+            //         { text: "Always Be Convenient (for the customer).", isCorrect: false },
+            //         { text: "Always Be Connecting or Always Be Prospecting, emphasizing pipeline building.", isCorrect: true },
+            //         { text: "Always Be Coaching (your team).", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'rejection-reframing',
+            //     question: "How can 'Rejection' be reframed for a Fanatical Prospector?",
+            //     options: [
+            //         { text: "As a personal failure.", isCorrect: false },
+            //         { text: "As a necessary part of the process and a learning opportunity, leading closer to a 'yes'.", isCorrect: true },
+            //         { text: "As a sign to stop prospecting that individual.", isCorrect: false },
+            //         { text: "As an opportunity to argue and convince.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'sales-funnel-analogy',
+            //     question: "What is the 'Sales Funnel' analogy used to illustrate in the context of pipeline management?",
+            //     options: [
+            //         { text: "The sequential steps a salesperson takes to close a single deal.", isCorrect: false },
+            //         { text: "The process of moving a large volume of potential customers from initial awareness through various stages to become paying customers.", isCorrect: true },
+            //         { text: "The hierarchical structure of a sales organization.", isCorrect: false },
+            //         { text: "A method for filtering out unqualified leads.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'cause-effect-law',
+            //     question: "How does the 'Law of Cause and Effect' apply to a Fanatical Prospector's daily activities?",
+            //     options: [
+            //         { text: "Every sales slump is caused by external market conditions.", isCorrect: false },
+            //         { text: "For every prospecting action (cause), there will be a corresponding and predictable sales outcome (effect), reinforcing consistent effort.", isCorrect: true },
+            //         { text: "Successful sales professionals are born with innate traits.", isCorrect: false },
+            //         { text: "The cause of most sales failures is lack of advanced sales technology.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'inbound-leads-danger',
+            //     question: "What is the danger of relying too heavily on 'Inbound Leads' alone for a salesperson's pipeline?",
+            //     options: [
+            //         { text: "Inbound leads are typically of lower quality.", isCorrect: false },
+            //         { text: "It creates a passive and reactive sales process, making the salesperson dependent on marketing and vulnerable to fluctuations.", isCorrect: true },
+            //         { text: "Inbound leads require more effort to convert.", isCorrect: false },
+            //         { text: "It eliminates need for developing outbound skills.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'personal-branding',
+            //     question: "How does 'Personal Branding' contribute to effective prospecting?",
+            //     options: [
+            //         { text: "By ensuring your company's brand is more recognizable.", isCorrect: false },
+            //         { text: "It builds familiarity and trust with prospects before direct outreach, making them more receptive.", isCorrect: true },
+            //         { text: "By allowing you to charge higher prices.", isCorrect: false },
+            //         { text: "It replaces the need for any direct prospecting efforts.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // },
+            // {
+            //     id: 'no-answers-mindset',
+            //     question: "What is the recommended mindset regarding 'No' answers in prospecting?",
+            //     options: [
+            //         { text: "To interpret 'no' as a personal rejection.", isCorrect: false },
+            //         { text: "To accept 'no' as a natural and necessary part of the process, a step closer to a 'yes', and to move on quickly.", isCorrect: true },
+            //         { text: "To immediately try to persuade the prospect to change their 'no'.", isCorrect: false },
+            //         { text: "To document every 'no' and report it as an excuse.", isCorrect: false }
+            //     ],
+            //     points: 100
+            // }
+        ];
+
+        // Badges definition
+        const badges = {
+            'pipeline-master': { name: 'Pipeline Pro', icon: 'fas fa-funnel-dollar', description: 'Mastered the core concept of pipeline management.' },
+            'mindset-champion': { name: 'Mindset Maestro', icon: 'fas fa-brain', description: 'Conquered the psychological hurdles of prospecting.' },
+            'time-wizard': { name: 'Time Alchemist', icon: 'fas fa-clock', description: 'Understands the magic of Golden Hours and Time Blocking.' },
+            'channel-navigator': { name: 'Channel Captain', icon: 'fas fa-route', description: 'Navigated the complexities of prospecting channels.' },
+            'rbo-master': { name: 'RBO Resolver', icon: 'fas fa-handshake-slash', description: 'Skilled in turning around Reflex Responses, Brush-Offs, and Objections.' },
+            'tough-mind': { name: 'Mental Fortitude', icon: 'fas fa-dumbbell', description: 'Demonstrated understanding of Mental Toughness pillars.' },
+            'fanatical-prospector': { name: 'Fanatical Legend', icon: 'fas fa-crown', description: 'Achieved mastery in Fanatical Prospecting principles.' }
+        };
+
+        // Initialize badges display
+        function initializeBadgesDisplay() {
+            badgesContainer.innerHTML = '';
+            for (const badgeId in badges) {
+                const badge = badges[badgeId];
+                const badgeDiv = document.createElement('div');
+                badgeDiv.id = `badge-${badgeId}`;
+                badgeDiv.className = 'badge-item';
+                badgeDiv.innerHTML = `<i class="${badge.icon} badge-icon"></i><span>${badge.name}</span>`;
+                badgesContainer.appendChild(badgeDiv);
+            }
+        }
+
+        // Function to unlock a badge
+        function unlockBadge(badgeId) {
+            if (!unlockedBadges[badgeId]) {
+                unlockedBadges[badgeId] = true;
+                const badgeElement = document.getElementById(`badge-${badgeId}`);
+                if (badgeElement) {
+                    badgeElement.classList.add('unlocked');
+                    // Optional: Add a visual notification for badge unlock
+                    feedbackMessage.textContent = `Badge Unlocked: ${badges[badgeId].name}!`;
+                    feedbackMessage.classList.add('text-green-600');
+                    setTimeout(() => {
+                        feedbackMessage.textContent = '';
+                        feedbackMessage.classList.remove('text-green-600');
+                    }, 3000);
+                }
+            }
+        }
+
+        // Function to load current question
+        function loadQuestion() {
+            if (currentLevelIndex < gameLevels.length) {
+                const currentLevel = gameLevels[currentLevelIndex];
+                questionText.textContent = currentLevel.question;
+                optionsContainer.innerHTML = ''; // Clear previous options
+                feedbackMessage.textContent = ''; // Clear feedback
+                nextButton.style.display = 'none'; // Hide next button
+                answeredCorrectlyOnCurrentLevel = false; // Reset flag
+
+                currentLevel.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.classList.add('option-button');
+                    button.textContent = option.text;
+                    button.dataset.index = index; // Store index for checking
+                    button.addEventListener('click', handleOptionClick);
+                    optionsContainer.appendChild(button);
+                });
+
+                updateProgressBar();
+                currentLevelDisplay.textContent = currentLevelIndex + 1;
+                totalLevelsDisplay.textContent = gameLevels.length;
+            } else {
+                endGame();
+            }
+        }
+
+        // Function to handle option click
+        function handleOptionClick(event) {
+            if (answeredCorrectlyOnCurrentLevel) return; // Prevent multiple clicks
+
+            const clickedButton = event.target;
+            const selectedOptionIndex = parseInt(clickedButton.dataset.index);
+            const currentLevel = gameLevels[currentLevelIndex];
+            const correctOption = currentLevel.options.find(opt => opt.isCorrect);
+            const correctOptionIndex = currentLevel.options.indexOf(correctOption);
+
+            // Disable all buttons after a choice is made
+            Array.from(optionsContainer.children).forEach(button => {
+                button.removeEventListener('click', handleOptionClick);
+                if (parseInt(button.dataset.index) === correctOptionIndex) {
+                    button.classList.add('correct'); // Highlight correct answer
+                } else {
+                    button.classList.add('incorrect'); // Highlight incorrect answers
+                }
+            });
+
+            if (currentLevel.options[selectedOptionIndex].isCorrect) {
+                currentScore += currentLevel.points;
+                scoreDisplay.textContent = currentScore;
+                feedbackMessage.textContent = "Correct! Well done!";
+                feedbackMessage.classList.remove('text-red-600');
+                feedbackMessage.classList.add('text-green-600');
+                answeredCorrectlyOnCurrentLevel = true;
+
+                // Check for badge unlock
+                if (currentLevel.badgeId) {
+                    unlockBadge(currentLevel.badgeId);
+                }
+            } else {
+                feedbackMessage.textContent = `Incorrect. The correct answer was: "${correctOption.text}"`;
+                feedbackMessage.classList.remove('text-green-600');
+                feedbackMessage.classList.add('text-red-600');
+            }
+
+            nextButton.style.display = 'block'; // Show next button
+        }
+
+        // Function to update progress bar
+        function updateProgressBar() {
+            const progress = ((currentLevelIndex) / gameLevels.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Function to advance to next level
+        function nextLevel() {
+            currentLevelIndex++;
+            loadQuestion();
+            feedbackMessage.textContent = ''; // Clear feedback for next question
+            feedbackMessage.classList.remove('text-green-600', 'text-red-600');
+        }
+
+        // Function to start the game
+        function startGame() {
+            introScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            gameOverScreen.style.display = 'none';
+            resetGame(); // Reset game state for a new start
+            loadQuestion();
+        }
+
+        // Function to end the game
+        function endGame() {
+            gameScreen.style.display = 'none';
+            gameOverScreen.style.display = 'block';
+            finalScoreDisplay.textContent = currentScore;
+            displayFinalBadges();
+        }
+
+        // Function to display final badges on game over screen
+        function displayFinalBadges() {
+            finalBadgesContainer.innerHTML = '';
+            let badgesFound = false;
+            for (const badgeId in badges) {
+                if (unlockedBadges[badgeId]) {
+                    const badge = badges[badgeId];
+                    const badgeDiv = document.createElement('div');
+                    badgeDiv.className = 'badge-item unlocked';
+                    badgeDiv.innerHTML = `<i class="${badge.icon} badge-icon"></i><span>${badge.name}</span>`;
+                    finalBadgesContainer.appendChild(badgeDiv);
+                    badgesFound = true;
+                }
+            }
+            if (!badgesFound) {
+                finalBadgesContainer.innerHTML = '<p class="text-slate-500">No badges earned yet. Keep practicing!</p>';
+            }
+        }
+
+        // Function to reset game state
+        function resetGame() {
+            currentScore = 0;
+            currentLevelIndex = 0;
+            unlockedBadges = {};
+            scoreDisplay.textContent = currentScore;
+            initializeBadgesDisplay(); // Re-render badges to show all as locked
+            updateProgressBar();
+        }
+
+        // Event Listeners
+        startGameButton.addEventListener('click', startGame);
+        nextButton.addEventListener('click', nextLevel);
+        restartGameButton.addEventListener('click', startGame); // Restart also calls startGame to reset
+
+        // Initial setup
+        initializeBadgesDisplay();
+        totalLevelsDisplay.textContent = gameLevels.length; // Set total levels on load
+    </script>
+</body>
+</html>

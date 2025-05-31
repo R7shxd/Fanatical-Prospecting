@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanatical Prospecting: Personalized Action Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Visualization & Content Choices: 
+        - Input Form: Goal: Gather user context. Method: HTML dropdowns, checkboxes, number input. Interaction: Standard form submission.
+        - Action Plan/Checklist: Goal: Provide actionable steps. Method: HTML unordered list with checkboxes. Interaction: Checkbox clicks update progress.
+        - Progress Tracker: Goal: Motivate and inform. Method: Dynamic text display. Interaction: Updates on task completion.
+        - Tailored Advice: Goal: Offer contextual guidance. Method: Dynamic text blocks. Interaction: Updates based on generated plan.
+        - Justification: Text-based inputs and outputs are most appropriate for a planning tool, allowing for direct mapping of user needs to specific strategies from the report. No complex charts or SVG are needed as the focus is on practical, step-by-step guidance.
+        - Library/Method: Tailwind CSS for layout and styling, Vanilla JS for all interactive logic, form handling, plan generation, and dynamic content updates.
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .container-wrapper { background-color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); padding: 2rem; max-width: 900px; margin: 2rem auto; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #0c4a6e; }
+        .form-select, .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #0ea5e9; /* sky-500 */
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); /* sky-500 with opacity */
+        }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            background-color: #f0f9ff; /* sky-50 */
+            border: 1px solid #bae6fd; /* sky-200 */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .checkbox-item:hover { background-color: #e0f2fe; }
+        .checkbox-item input[type="checkbox"] { margin-right: 0.5rem; }
+        .action-item {
+            display: flex;
+            align-items: center;
+            background-color: #f8fafc; /* slate-50 */
+            border: 1px solid #e2e8f0; /* slate-200 */
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .action-item.completed {
+            background-color: #ecfdf5; /* emerald-50 */
+            border-color: #a7f3d0; /* emerald-200 */
+            text-decoration: line-through;
+            color: #334155; /* slate-700 */
+        }
+        .action-item input[type="checkbox"] { margin-right: 1rem; transform: scale(1.2); }
+        .action-item-text { flex-grow: 1; color: #334155; }
+        .button-primary {
+            background-color: #0ea5e9; /* sky-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .button-primary:hover { background-color: #0284c7; /* sky-600 */ }
+        .button-secondary {
+            background-color: #cbd5e1; /* slate-300 */
+            color: #334155; /* slate-700 */
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .button-secondary:hover { background-color: #94a3b8; /* slate-400 */ }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-sky-700 text-white p-4 shadow-md">
+        <div class="container mx-auto text-center">
+            <h1 class="text-3xl font-bold">Fanatical Prospecting: Personalized Action Planner</h1>
+            <p class="mt-2 text-sky-100">Tailored steps to overcome challenges and achieve your sales goals.</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="container-wrapper">
+            <div id="input-section">
+                <h2 class="text-2xl font-semibold mb-6 text-sky-800">Generate Your Personalized Prospecting Plan</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label for="challenge-select" class="form-label">What is your biggest prospecting challenge?</label>
+                        <select id="challenge-select" class="form-select">
+                            <option value="">Select a challenge</option>
+                            <option value="fear_of_calling">Fear of Calling / Inaction</option>
+                            <option value="pipeline_slump">Weak/Empty Pipeline</option>
+                            <option value="time_management">Time Management Issues</option>
+                            <option value="ineffective_messaging">Ineffective Messaging / RBOs</option>
+                            <option value="gatekeeper_problems">Dealing with Gatekeepers</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="goal-select" class="form-label">What is your primary prospecting goal?</label>
+                        <select id="goal-select" class="form-select">
+                            <option value="">Select a goal</option>
+                            <option value="increase_appointments">Increase Appointments Set</option>
+                            <option value="improve_closing">Improve Closing Rate (indirectly via pipeline)</option>
+                            <option value="build_network">Build Network & Familiarity</option>
+                            <option value="overcome_fear">Overcome Fear & Inaction</option>
+                            <option value="consistent_activity">Establish Consistent Activity</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Which channels do you want to focus on?</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="channel" value="telephone"> Telephone
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="channel" value="email"> Email
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="channel" value="social_selling"> Social Selling
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="channel" value="text_messaging"> Text Messaging
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="channel" value="in_person"> In-Person Prospecting
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="channel" value="referrals_networking"> Referrals & Networking
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="time-commitment" class="form-label">Daily dedicated prospecting time (hours, e.g., 2):</label>
+                        <input type="number" id="time-commitment" class="form-input" min="0.5" max="4" step="0.5" value="1">
+                    </div>
+
+                    <button id="generate-plan-btn" class="button-primary w-full">Generate My Plan</button>
+                </div>
+            </div>
+
+            <div id="output-section" class="hidden mt-8">
+                <h2 class="text-2xl font-semibold mb-4 text-sky-800">Your Personalized Action Plan</h2>
+                <p class="text-sm font-medium text-slate-600 mb-4">Progress: <span id="progress-tracker">0/0</span> tasks completed</p>
+                
+                <div id="action-checklist" class="space-y-3 mb-6">
+                    </div>
+
+                <div id="tailored-advice" class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded-md mb-6">
+                    <h3 class="font-semibold text-lg mb-2">Tailored Advice:</h3>
+                    <p id="advice-text"></p>
+                </div>
+
+                <button id="reset-planner-btn" class="button-secondary w-full">Start New Plan</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 text-center p-8 mt-auto">
+        <p>&copy; <span id="currentYear"></span> Fanatical Prospecting Action Planner. Concepts based on Jeb Blount's work.</p>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const inputSection = document.getElementById('input-section');
+        const outputSection = document.getElementById('output-section');
+        const generatePlanBtn = document.getElementById('generate-plan-btn');
+        const resetPlannerBtn = document.getElementById('reset-planner-btn');
+        const challengeSelect = document.getElementById('challenge-select');
+        const goalSelect = document.getElementById('goal-select');
+        const channelCheckboxes = document.querySelectorAll('input[name="channel"]');
+        const timeCommitmentInput = document.getElementById('time-commitment');
+        const actionChecklist = document.getElementById('action-checklist');
+        const progressTracker = document.getElementById('progress-tracker');
+        const adviceText = document.getElementById('advice-text');
+
+        const knowledgeBase = {
+            challenges: {
+                fear_of_calling: {
+                    advice: "To overcome fear and inaction, focus on 'messy success' over 'perfect mediocrity'. Break down prospecting into tiny, manageable steps. Your goal is action, not perfection.",
+                    actions: [
+                        "Commit to making just ONE call/email/touch today, right now.",
+                        "Practice your opening lines out loud 5 times before your first call.",
+                        "Reframe 'rejection' as simply gathering information (Rule of Thirds).",
+                        "Set a timer for 15 minutes and only do prospecting during that time, no distractions."
+                    ]
+                },
+                pipeline_slump: {
+                    advice: "An empty pipeline is the single biggest cause of sales failure. The 30-Day Rule means your current actions affect sales 90 days from now. Implement the Law of Replacement immediately.",
+                    actions: [
+                        "Schedule and protect daily 'Power Hours' for prospecting calls/emails.",
+                        "Identify your ideal customer profile and create a list of 20 new prospects.",
+                        "Calculate your Law of Replacement number: for every deal closed, how many new prospects do you need to add?",
+                        "Avoid the 'Universal Law of Need' by consistently filling your pipeline, even when times are good."
+                    ]
+                },
+                time_management: {
+                    advice: "Time is the great equalizer. Adopt a CEO mindset for your territory. Protect your 'Golden Hours' for revenue-generating activities and relegate admin to 'Platinum Hours'.",
+                    actions: [
+                        "Block out specific 'Golden Hours' in your calendar for prospecting and treat them as non-negotiable.",
+                        "Move all pre-call research and CRM updates to 'Platinum Hours' (before/after Golden Hours).",
+                        "Learn to politely say 'no' to non-critical internal requests that encroach on your prospecting time.",
+                        "Calculate your hourly worth to understand the true cost of time spent on low-value tasks."
+                    ]
+                },
+                ineffective_messaging: {
+                    advice: "Your message must be quick, simple, direct, and relevant. Focus on 'What's In It For Me?' (WIIFM) for the prospect. Be prepared to turn around RBOs (Reflex Responses, Brush-Offs, Objections).",
+                    actions: [
+                        "Refine your 'Bridge' statement to clearly connect your solution to a common prospect problem.",
+                        "Practice the 'Anchor, Disrupt, Ask' framework for common RBOs (e.g., 'I'm busy', 'Not interested').",
+                        "Ensure your email subject lines are short, personalized, and compelling (3-6 words).",
+                        "When asking for something, 'shut up' and let the prospect respond without interruption."
+                    ]
+                },
+                gatekeeper_problems: {
+                    advice: "Gatekeepers are protectors, not enemies. Approach them with respect and aim to enlist their help. Persistence, likability, and transparency are key.",
+                    actions: [
+                        "Practice being genuinely likable and respectful with gatekeepers.",
+                        "Use 'please, please' when making requests to a gatekeeper.",
+                        "Be transparent: clearly state your name and company.",
+                        "If direct approach fails, try a 'Gatekeeper Hack' like calling other extensions or the sales department."
+                    ]
+                }
+            },
+            goals: {
+                increase_appointments: [
+                    "Set a daily target for the number of appointments you want to set.",
+                    "Refine your 'ask' for appointments to be clear and assumptive.",
+                    "Utilize the 5-step telephone call framework for direct appointment setting.",
+                    "For email, ensure your call-to-action is a clear request for a meeting."
+                ],
+                improve_closing: [
+                    "Focus on consistently filling your pipeline to avoid desperation (Universal Law of Need).",
+                    "Ensure you are qualifying prospects thoroughly to avoid 'ugly deals'.",
+                    "Review your RBO turnaround strategies to handle objections effectively.",
+                    "Practice your 'Art of Asking' to confidently move deals forward."
+                ],
+                build_network: [
+                    "Actively engage on LinkedIn: connect with target prospects and industry influencers.",
+                    "Share valuable content (curated or created) on social media daily.",
+                    "Attend one networking event per week/month with a goal to make X new connections.",
+                    "Follow up diligently with new connections (e.g., personalized email or text)."
+                ],
+                overcome_fear: [
+                    "Implement the 'One More Call' mantra: push for one extra touch when you feel like stopping.",
+                    "Focus on your 'Desire' pillar of mental toughness – remind yourself why you want this success.",
+                    "Control your self-talk and curate your input to maintain a positive attitude.",
+                    "Celebrate small wins to build momentum and confidence."
+                ],
+                consistent_activity: [
+                    "Implement daily time blocking for prospecting activities.",
+                    "Review your CRM daily to ensure all activities are logged and follow-ups are scheduled.",
+                    "Track your daily prospecting numbers (calls, emails, connections) to monitor consistency.",
+                    "Adopt a 'CEO Mindset' and take full responsibility for your daily activity levels."
+                ]
+            },
+            channels: {
+                telephone: [
+                    "Dedicate a 1-2 hour 'Power Hour' block for calls, free from distractions.",
+                    "Practice the 5-step telephone prospecting call script.",
+                    "Craft concise, effective voicemails (under 30 seconds) with a clear call to action.",
+                    "Don't wait for the 'perfect time' to call; consistency is key."
+                ],
+                email: [
+                    "Ensure your emails adhere to the 'Three Cardinal Rules' (delivered, opened, converted).",
+                    "Use the 4-element email framework: Hook, Relate, Bridge, Ask.",
+                    "Personalize email subject lines and opening sentences.",
+                    "Proofread every email before sending."
+                ],
+                social_selling: [
+                    "Implement the 'Five Cs' of social selling: Connecting, Content Creation, Content Curation, Conversion, Consistency.",
+                    "Use social media for research to gather insights before direct outreach.",
+                    "Engage with prospect content (likes, comments) to build familiarity.",
+                    "Use social platforms to identify trigger events."
+                ],
+                text_messaging: [
+                    "Only text prospects with whom you have established some familiarity.",
+                    "Keep text messages direct, brief (1-4 sentences), and professional.",
+                    "Always identify yourself and your company in texts.",
+                    "Use transparent links (full URLs) if sharing resources via text."
+                ],
+                in_person: [
+                    "Plan your in-person visits using the 'Hub-and-Spoke' technique around existing appointments.",
+                    "Always have a clear objective for each in-person prospecting call.",
+                    "Practice the 5-step in-person prospecting call process.",
+                    "Wear your 'Sales Goggles' to identify new opportunities in your surroundings."
+                ],
+                referrals_networking: [
+                    "Actively ask current satisfied clients for referrals.",
+                    "Attend industry events focused on networking, not direct selling.",
+                    "Follow up promptly and personally with new network connections.",
+                    "Focus on building genuine relationships; familiarity lubricates prospecting."
+                ]
+            }
+        };
+
+        function generatePlan() {
+            const selectedChallenge = challengeSelect.value;
+            const selectedGoal = goalSelect.value;
+            const selectedChannels = Array.from(channelCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+            const timeCommitment = parseFloat(timeCommitmentInput.value);
+
+            if (!selectedChallenge && !selectedGoal && selectedChannels.length === 0) {
+                adviceText.textContent = "Please select at least one challenge, goal, or channel to generate a plan.";
+                outputSection.classList.remove('hidden');
+                actionChecklist.innerHTML = '';
+                updateProgress();
+                return;
+            }
+
+            let planItems = new Set();
+            let adviceContent = [];
+
+            // Add challenge-specific actions and advice
+            if (selectedChallenge && knowledgeBase.challenges[selectedChallenge]) {
+                knowledgeBase.challenges[selectedChallenge].actions.forEach(action => planItems.add(action));
+                adviceContent.push(knowledgeBase.challenges[selectedChallenge].advice);
+            }
+
+            // Add goal-specific actions
+            if (selectedGoal && knowledgeBase.goals[selectedGoal]) {
+                knowledgeBase.goals[selectedGoal].forEach(action => planItems.add(action));
+            }
+
+            // Add channel-specific actions
+            selectedChannels.forEach(channel => {
+                if (knowledgeBase.channels[channel]) {
+                    knowledgeBase.channels[channel].forEach(action => planItems.add(action));
+                }
+            });
+
+            // Add general actions based on time commitment
+            if (timeCommitment > 0) {
+                if (timeCommitment >= 1) {
+                    planItems.add(`Dedicate ${timeCommitment} hour(s) daily to 'Golden Hour' prospecting activities.`);
+                }
+                if (timeCommitment >= 2) {
+                    planItems.add("Implement a 2-hour 'Power Hour' phone block daily, free from distractions.");
+                }
+            }
+            
+            // Add some universal principles if no specific challenge/goal/channel is selected
+            if (planItems.size === 0) {
+                planItems.add("Review the 'Universal Law of Need' and '30-Day Rule' to understand pipeline dynamics.");
+                planItems.add("Adopt a 'CEO Mindset' and take full responsibility for your prospecting outcomes.");
+                planItems.add("Practice the 'One More Call' mantra to build discipline and find serendipitous success.");
+                adviceContent.push("It seems you're looking for general guidance. Start by understanding the foundational laws and adopting a proactive mindset. Consistency is key!");
+            }
+
+
+            actionChecklist.innerHTML = '';
+            planItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'action-item';
+                div.innerHTML = `
+                    <input type="checkbox" class="task-checkbox">
+                    <span class="action-item-text">${item}</span>
+                `;
+                actionChecklist.appendChild(div);
+            });
+
+            // Update advice text
+            if (adviceContent.length > 0) {
+                adviceText.innerHTML = adviceContent.join('<br><br>');
+            } else {
+                adviceText.textContent = "Your personalized advice will appear here based on your selections.";
+            }
+
+            outputSection.classList.remove('hidden');
+            inputSection.classList.add('hidden');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const checkboxes = actionChecklist.querySelectorAll('.task-checkbox');
+            let completed = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    completed++;
+                    cb.parentElement.classList.add('completed');
+                } else {
+                    cb.parentElement.classList.remove('completed');
+                }
+            });
+            progressTracker.textContent = `${completed}/${checkboxes.length}`;
+        }
+
+        function resetPlanner() {
+            inputSection.classList.remove('hidden');
+            outputSection.classList.add('hidden');
+            challengeSelect.value = '';
+            goalSelect.value = '';
+            channelCheckboxes.forEach(cb => cb.checked = false);
+            timeCommitmentInput.value = '1';
+            actionChecklist.innerHTML = '';
+            adviceText.textContent = '';
+            updateProgress();
+        }
+
+        generatePlanBtn.addEventListener('click', generatePlan);
+        resetPlannerBtn.addEventListener('click', resetPlanner);
+        actionChecklist.addEventListener('change', updateProgress);
+
+        // Initial state
+        resetPlanner();
+    </script>
+</body>
+</html>

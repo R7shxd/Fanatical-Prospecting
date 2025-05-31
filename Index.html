@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanatical Prospecting: Interactive Learning Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Slate 50 - very light background */
+            color: #1e293b; /* Slate 900 - dark text for contrast */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align to top */
+            padding: 2rem 0; /* Vertical padding */
+        }
+        .container-wrapper {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* Large rounded corners for a soft, modern look */
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25), 0 10px 20px -5px rgba(0,0,0,0.1); /* Deeper shadow for premium feel */
+            max-width: 1000px; /* Max width for readability */
+            width: 95%; /* Fluid width for responsiveness */
+            padding: 3rem; /* Generous padding */
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+        }
+        @media (max-width: 768px) {
+            .container-wrapper {
+                padding: 1.5rem; /* Reduce padding on smaller screens */
+            }
+        }
+        h1 {
+            font-size: 3.5rem; /* Large, impactful title */
+            font-weight: 800; /* Extra bold */
+            color: #0c4a6e; /* Dark blue for a professional touch */
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #475569; /* Slightly lighter gray for subtitle */
+            margin-bottom: 2.5rem;
+        }
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 1.5rem; /* Space between modules */
+            margin-top: 2rem;
+        }
+        .module-card {
+            background-color: #f0f9ff; /* Sky 50 - light blue background for cards */
+            border: 1px solid #bae6fd; /* Sky 200 - subtle border */
+            border-radius: 1rem; /* Rounded corners for cards */
+            padding: 1.5rem;
+            text-align: left;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Soft shadow */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .module-card:hover {
+            background-color: #e0f2fe; /* Sky 100 - slightly darker on hover */
+            border-color: #0ea5e9; /* Sky 500 - prominent border on hover */
+            transform: translateY(-5px); /* Lift effect on hover */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* Enhanced shadow */
+        }
+        .module-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #075985; /* Darker blue for module titles */
+            margin-bottom: 0.75rem;
+        }
+        .module-card p {
+            font-size: 0.95rem;
+            color: #475569; /* Slate 600 for description text */
+            line-height: 1.5;
+            flex-grow: 1; /* Allows description to take up available space */
+            margin-bottom: 1rem;
+        }
+        .module-card .icon {
+            font-size: 2.5rem;
+            color: #0ea5e9; /* Sky 500 for icons */
+            margin-bottom: 1rem;
+        }
+        .module-link {
+            display: inline-block;
+            background-color: #0ea5e9; /* Sky 500 - primary button color */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* Rounded button */
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Soft button shadow */
+        }
+        .module-link:hover {
+            background-color: #0284c7; /* Sky 600 - darker on hover */
+            transform: translateY(-1px); /* Slight lift on hover */
+        }
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0; /* Subtle separator */
+            color: #64748b; /* Slate 500 */
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-wrapper">
+        <header>
+            <h1>Fanatical Prospecting</h1>
+            <p class="subtitle">Your Interactive Learning Hub for Sales Mastery</p>
+        </header>
+
+        <section class="module-grid">
+            <div class="module-card">
+                <i class="icon fas fa-book-open"></i>
+                <h3>Interactive Ebook</h3>
+                <p>Dive deep into the core concepts of Fanatical Prospecting with an engaging, page-flipping experience. Includes clickable definitions and embedded questions.</p>
+                <a href="Interactive Ebook.html" class="module-link">Launch Ebook</a>
+            </div>
+
+            <div class="module-card">
+                <i class="icon fas fa-gamepad"></i>
+                <h3>Gamified Learning Module</h3>
+                <p>Test your knowledge and earn points and badges as you progress through challenges. Transform learning into an exciting game!</p>
+                <a href="Gamified Learning Module.html" class="module-link">Play Game</a>
+            </div>
+
+            <div class="module-card">
+                <i class="icon fas fa-sitemap"></i>
+                <h3>Decision Flow Navigator</h3>
+                <p>Navigate complex sales scenarios and objection handling with interactive decision trees. Get step-by-step guidance for RBOs and channel selection.</p>
+                <a href="Decision Flow Navigator.html" class="module-link">Start Navigator</a>
+            </div>
+
+            <div class="module-card">
+                <i class="icon fas fa-lightbulb"></i>
+                <h3>Glossary & Flashcards</h3>
+                <p>Master key terminology with an interactive glossary and self-testing flashcards. Perfect for quick review and memorization.</p>
+                <a href="Glossary and Flashcards.html" class="module-link">Explore Terms</a>
+            </div>
+
+            <div class="module-card">
+                <i class="icon fas fa-clipboard-list"></i>
+                <h3>Personalized Action Planner</h3>
+                <p>Generate a custom prospecting action plan based on your specific challenges, goals, and preferred channels. Track your progress!</p>
+                <a href="Fanatical Prospecting Personalized Action Planner.html" class="module-link">Create Plan</a>
+            </div>
+
+            <div class="module-card">
+                <i class="icon fas fa-user-friends"></i>
+                <h3>Scenario-Based Learning</h3>
+                <p>Apply Fanatical Prospecting principles to realistic sales scenarios. Make choices and receive immediate feedback on outcomes.</p>
+                <a href="Fanatical Prospecting Scenarios.html" class="module-link">Practice Scenarios</a>
+            </div>
+
+            <div class="module-card">
+                <i class="icon fas fa-chart-pie"></i>
+                <h3>Interactive Infographic</h3>
+                <p>Visualize key statistics, market dynamics, and strategic frameworks from the book in an engaging and informative infographic format.</p>
+                <a href="Fanatical Prospecting Infographic.html" class="module-link">View Infographic</a>
+            </div>
+
+            <div class="module-card">
+                <i class="icon fas fa-laptop-code"></i>
+                <h3>Interactive SPA Guide</h3>
+                <p>Explore the core principles, foundational laws, and channels of Fanatical Prospecting through a sleek, single-page application experience.</p>
+                <a href="Fanatical Prospecting SPA.html" class="module-link">Launch SPA Guide</a>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; <span id="currentYear"></span> Fanatical Prospecting Interactive Hub. All rights reserved.</p>
+            <p>Inspired by the work of Jeb Blount.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

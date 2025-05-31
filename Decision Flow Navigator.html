@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanatical Prospecting: Decision Flow Navigator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Visualization & Content Choices: 
+        - Flowchart Nodes: Goal: Guide decision-making. Method: HTML `div` elements representing questions and choices. Interaction: Button clicks to progress through the flow.
+        - Dynamic Content: Goal: Provide context and recommendations. Method: Textual content within each node, dynamically updated based on the flow.
+        - Justification: This interactive, step-by-step approach simplifies complex decision processes (like objection handling or channel selection) by breaking them into manageable, sequential questions. The use of HTML/CSS for nodes and vanilla JS for logic is efficient and provides a clear, visual path without needing complex charting libraries.
+        - Library/Method: Tailwind CSS for layout and styling, Vanilla JS for all interactive logic and dynamic content updates.
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .container-wrapper { background-color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); padding: 2rem; max-width: 900px; margin: 2rem auto; }
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #e2e8f0; /* slate-200 */
+            color: #475569; /* slate-600 */
+        }
+        .nav-tab.active {
+            background-color: #0ea5e9; /* sky-500 */
+            color: white;
+        }
+        .nav-tab:hover:not(.active) {
+            background-color: #cbd5e1; /* slate-300 */
+        }
+        .flow-view { display: none; }
+        .flow-view.active { display: block; }
+        .flow-node {
+            background-color: #f0f9ff; /* sky-50 */
+            border: 1px solid #bae6fd; /* sky-200 */
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: none; /* Hidden by default */
+        }
+        .flow-node.active { display: block; }
+        .flow-node h3 { font-size: 1.5rem; font-weight: 600; color: #0c4a6e; margin-bottom: 1rem; }
+        .flow-node p { color: #334155; margin-bottom: 1rem; }
+        .flow-option-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.375rem;
+            background-color: #e0f2fe; /* sky-100 */
+            border: 1px solid #7dd3fc; /* sky-300 */
+            color: #0c4a6e; /* sky-900 */
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .flow-option-button:hover {
+            background-color: #bae6fd; /* sky-200 */
+            border-color: #0ea5e9; /* sky-500 */
+        }
+        .flow-result {
+            background-color: #ecfdf5; /* emerald-50 */
+            border-left: 4px solid #10b981; /* emerald-500 */
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            color: #065f46; /* emerald-800 */
+            font-weight: 500;
+        }
+        .reset-button {
+            background-color: #cbd5e1; /* slate-300 */
+            color: #334155; /* slate-700 */
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 1.5rem;
+        }
+        .reset-button:hover { background-color: #94a3b8; /* slate-400 */ }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-sky-700 text-white p-4 shadow-md">
+        <div class="container mx-auto text-center">
+            <h1 class="text-3xl font-bold">Fanatical Prospecting: Decision Flow Navigator</h1>
+            <p class="mt-2 text-sky-100">Step-by-step guidance for complex sales processes.</p>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-sm py-3">
+        <div class="container mx-auto flex justify-center space-x-4">
+            <button class="nav-tab active" data-flow="rbo-flow">RBO Turnaround Framework</button>
+            <button class="nav-tab" data-flow="channel-flow">Prospecting Channel Selector</button>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="container-wrapper">
+
+            <section id="rbo-flow" class="flow-view active">
+                <h2 class="text-2xl font-semibold mb-6 text-sky-800 text-center">RBO Turnaround Framework</h2>
+                <p class="mb-4 text-slate-700">Navigate common prospect resistances (Reflex Responses, Brush-Offs, Objections) using the Anchor, Disrupt, Ask framework.</p>
+                <div id="rbo-flow-container">
+                    </div>
+                <button id="rbo-reset-btn" class="reset-button w-full">Start Over</button>
+            </section>
+
+            <section id="channel-flow" class="flow-view">
+                <h2 class="text-2xl font-semibold mb-6 text-sky-800 text-center">Prospecting Channel Selector</h2>
+                <p class="mb-4 text-slate-700">Determine the most effective prospecting channels based on your objectives and prospect context.</p>
+                <div id="channel-flow-container">
+                    </div>
+                <button id="channel-reset-btn" class="reset-button w-full">Start Over</button>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 text-center p-8 mt-auto">
+        <p>&copy; <span id="currentYear"></span> Fanatical Prospecting Decision Flow Navigator. Concepts based on Jeb Blount's work.</p>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const flowViews = document.querySelectorAll('.flow-view');
+        const rboFlowContainer = document.getElementById('rbo-flow-container');
+        const channelFlowContainer = document.getElementById('channel-flow-container');
+        const rboResetBtn = document.getElementById('rbo-reset-btn');
+        const channelResetBtn = document.getElementById('channel-reset-btn');
+
+        // --- RBO Flow Data ---
+        const rboFlowData = {
+            "start": {
+                "question": "What type of resistance are you encountering?",
+                "options": [
+                    { "text": "Automatic, conditioned response ('I'm just looking')", "next": "rbo-reflex" },
+                    { "text": "Polite evasion ('Send me some information')", "next": "rbo-brush-off" },
+                    { "text": "Truthful rebuttal ('We just signed a new contract')", "next": "rbo-objection" }
+                ]
+            },
+            "rbo-reflex": {
+                "question": "This is a Reflex Response. How should you approach it?",
+                "options": [
+                    { "text": "Anchor, Disrupt, Ask (Example: 'That's exactly why I called...')", "next": "rbo-outcome-reflex" },
+                    { "text": "Immediately accept and disengage", "next": "rbo-outcome-fail" }
+                ]
+            },
+            "rbo-brush-off": {
+                "question": "This is a Brush-Off. How should you respond?",
+                "options": [
+                    { "text": "Anchor, Disrupt, Ask (Example: 'Most of my clients said that initially...')", "next": "rbo-outcome-brush-off" },
+                    { "text": "Send the requested information without further engagement", "next": "rbo-outcome-fail" }
+                ]
+            },
+            "rbo-objection": {
+                "question": "This is a true Objection. What is your best strategy?",
+                "options": [
+                    { "text": "Anchor, Disrupt, Ask (Example: 'That's fantastic! All I want to do is...')", "next": "rbo-outcome-objection" },
+                    { "text": "Argue the point or try to convince them", "next": "rbo-outcome-fail" }
+                ]
+            },
+            "rbo-outcome-reflex": {
+                "result": "<strong>Strategy: Anchor, Disrupt, Ask.</strong><br><strong>Example:</strong> Prospect: 'I'm busy.' You: 'Nancy, that's exactly why I called. I figured you would be, so I want to find a time that is more convenient for you. How about next Wednesday at 3:00 PM instead?'<br><strong>Principle:</strong> Disrupt their expectation and re-ask confidently. This helps regain control and pivot the conversation.",
+                "type": "result"
+            },
+            "rbo-outcome-brush-off": {
+                "result": "<strong>Strategy: Anchor, Disrupt, Ask.</strong><br><strong>Example:</strong> Prospect: 'Send me some information.' You: 'You know, that is what a lot of my current clients said the first time I called... doesn't it make sense for us to at least get together for a short meeting to find out? How about Friday at 2:00 PM?'<br><strong>Principle:</strong> Challenge the polite evasion by re-focusing on potential value for them.",
+                "type": "result"
+            },
+            "rbo-outcome-objection": {
+                "result": "<strong>Strategy: Anchor, Disrupt, Ask.</strong><br><strong>Example:</strong> Prospect: 'We're really happy with our current provider.' You: 'That's fantastic! Anytime you are getting great rates and great service, you should never think about changing. All I want to do is come by and get to know you a little better. And even if it doesn't make sense to do business with me at the moment, I can at least give you a competitive quote that will help you keep those other guys honest. How about I come by on Tuesday at 11:30 AM?'<br><strong>Principle:</strong> Acknowledge their position, then offer a compelling, low-risk reason to meet.",
+                "type": "result"
+            },
+            "rbo-outcome-fail": {
+                "result": "<strong>Outcome: Missed Opportunity.</strong><br>Immediately accepting resistance or arguing often leads to a lost prospect. The goal is to disrupt and re-engage, not to give up or confront.",
+                "type": "result"
+            }
+        };
+
+        // --- Channel Flow Data ---
+        const channelFlowData = {
+            "start": {
+                "question": "What is your primary objective for this prospecting outreach?",
+                "options": [
+                    { "text": "Set an appointment", "next": "channel-objective-appointment" },
+                    { "text": "Gather information & qualify", "next": "channel-objective-info" },
+                    { "text": "Close the sale (transactional)", "next": "channel-objective-close" },
+                    { "text": "Build familiarity & brand awareness", "next": "channel-objective-familiarity" }
+                ]
+            },
+            "channel-objective-appointment": {
+                "question": "What is your current familiarity level with the prospect?",
+                "options": [
+                    { "text": "Very low (cold)", "next": "channel-appointment-cold" },
+                    { "text": "Some (e.g., mutual connection, social engagement)", "next": "channel-appointment-warm" },
+                    { "text": "High (e.g., referral, past interaction)", "next": "channel-appointment-hot" }
+                ]
+            },
+            "channel-objective-info": {
+                "question": "What is your primary goal for information gathering?",
+                "options": [
+                    { "text": "Broad research/initial qualification (many prospects)", "next": "channel-info-broad" },
+                    { "text": "Deep dive into a specific high-value prospect", "next": "channel-info-deep" }
+                ]
+            },
+            "channel-objective-close": {
+                "question": "Is this a transactional, low-risk product/service?",
+                "options": [
+                    { "text": "Yes, highly transactional", "next": "channel-close-transactional" },
+                    { "text": "No, more complex/high-value", "next": "channel-close-complex" }
+                ]
+            },
+            "channel-objective-familiarity": {
+                "question": "What is your primary method for building familiarity?",
+                "options": [
+                    { "text": "Broad reach & content sharing", "next": "channel-familiarity-broad" },
+                    { "text": "Direct personal connection & networking", "next": "channel-familiarity-direct" }
+                ]
+            },
+            "channel-appointment-cold": {
+                "result": "<strong>Recommended Channels:</strong> Telephone (Power Hour), Email (strong Hook/Bridge/Ask). In-Person (Hub-and-Spoke) for local, high-value.<br><strong>Advice:</strong> Be direct and transparent. Focus on WIIFM. Be prepared for RBOs. Initial goal is often just to get a conversation started or a micro-commitment.",
+                "type": "result"
+            },
+            "channel-appointment-warm": {
+                "result": "<strong>Recommended Channels:</strong> Telephone, Personalized Email, Social Selling (direct message).<br><strong>Advice:</strong> Leverage existing connection/engagement. Reference shared content or mutual contacts. Make a clear, low-friction ask for an appointment.",
+                "type": "result"
+            },
+            "channel-appointment-hot": {
+                "result": "<strong>Recommended Channels:</strong> Telephone (immediate), Text Messaging (if appropriate), Direct Email.<br><strong>Advice:</strong> Act quickly. Reference the referral or previous interaction. Focus on securing the appointment with minimal friction.",
+                "type": "result"
+            },
+            "channel-info-broad": {
+                "result": "<strong>Recommended Channels:</strong> CRM (data entry & segmentation), Social Selling (research, LinkedIn Sales Navigator), Email (mass personalized, for initial qualification).<br><strong>Advice:</strong> Prioritize efficiency. Use tools to gather basic info. Focus on moving prospects up the pyramid.",
+                "type": "result"
+            },
+            "channel-info-deep": {
+                "result": "<strong>Recommended Channels:</strong> Social Selling (deep dive research), In-Person (if local & high value), Telephone (discovery calls).<br><strong>Advice:</strong> Invest time in understanding their specific business, challenges, and stakeholders. Prepare targeted questions.",
+                "type": "result"
+            },
+            "channel-close-transactional": {
+                "result": "<strong>Recommended Channels:</strong> Telephone (direct close), In-Person (direct close), Email (clear CTA, simple purchase path).<br><strong>Advice:</strong> Be ready to close on the first interaction. Keep the process simple and direct.",
+                "type": "result"
+            },
+            "channel-close-complex": {
+                "result": "<strong>Recommended Channels:</strong> This flow is for transactional closing. For complex sales, your primary objective is likely 'Set an Appointment' or 'Gather Information & Qualify' first, leading to a multi-stage sales process, not an immediate close.<br><strong>Advice:</strong> Re-evaluate your primary objective. Focus on setting the next step, not closing immediately.",
+                "type": "result"
+            },
+            "channel-familiarity-broad": {
+                "result": "<strong>Recommended Channels:</strong> Social Selling (Content Creation, Content Curation, Consistency), Email (value-add newsletters/updates), Networking Events.<br><strong>Advice:</strong> Focus on providing consistent value. Build your personal brand. Engage broadly without direct selling.",
+                "type": "result"
+            },
+            "channel-familiarity-direct": {
+                "result": "<strong>Recommended Channels:</strong> Referrals, Networking (1:1 connections), Social Selling (direct engagement, personalized comments), Text Messaging (after initial contact).<br><strong>Advice:</strong> Cultivate genuine relationships. Ask for referrals. Follow up diligently and personally.",
+                "type": "result"
+            }
+        };
+
+        let currentFlowData = {};
+        let currentFlowContainer = null;
+
+        // --- Flow Navigation Functions ---
+        function loadFlow(flowName) {
+            if (flowName === 'rbo-flow') {
+                currentFlowData = rboFlowData;
+                currentFlowContainer = rboFlowContainer;
+            } else if (flowName === 'channel-flow') {
+                currentFlowData = channelFlowData;
+                currentFlowContainer = channelFlowContainer;
+            }
+            startFlow();
+        }
+
+        function startFlow() {
+            currentFlowContainer.innerHTML = '';
+            renderNode("start");
+        }
+
+        function renderNode(nodeId) {
+            const nodeData = currentFlowData[nodeId];
+            if (!nodeData) {
+                console.error("Node not found:", nodeId);
+                return;
+            }
+
+            const nodeDiv = document.createElement('div');
+            nodeDiv.id = `node-${nodeId}`;
+            nodeDiv.className = 'flow-node active'; // Always active when rendered
+
+            if (nodeData.type === "result") {
+                nodeDiv.innerHTML = `
+                    <h3>Recommended Strategy:</h3>
+                    <div class="flow-result">
+                        <p>${nodeData.result}</p>
+                    </div>
+                `;
+            } else {
+                nodeDiv.innerHTML = `
+                    <h3>${nodeData.question}</h3>
+                    <div class="space-y-2">
+                        ${nodeData.options.map((option, index) => `
+                            <button class="flow-option-button" data-next-node="${option.next}">
+                                ${option.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            currentFlowContainer.appendChild(nodeDiv);
+
+            // Add event listeners for new buttons
+            if (nodeData.options) {
+                nodeDiv.querySelectorAll('.flow-option-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const nextNodeId = e.target.dataset.nextNode;
+                        hideAllNodes(); // Hide all current nodes
+                        renderNode(nextNodeId); // Render the next node
+                    });
+                });
+            }
+        }
+
+        function hideAllNodes() {
+            currentFlowContainer.querySelectorAll('.flow-node').forEach(node => {
+                node.classList.remove('active');
+                node.style.display = 'none';
+            });
+        }
+
+        // --- Event Listeners ---
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                flowViews.forEach(view => {
+                    view.classList.remove('active');
+                    view.style.display = 'none';
+                });
+                const targetFlowId = tab.dataset.flow;
+                document.getElementById(targetFlowId).classList.add('active');
+                document.getElementById(targetFlowId).style.display = 'block';
+
+                navTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                loadFlow(targetFlowId); // Load the selected flow
+            });
+        });
+
+        rboResetBtn.addEventListener('click', () => loadFlow('rbo-flow'));
+        channelResetBtn.addEventListener('click', () => loadFlow('channel-flow'));
+
+        // --- Initial Load ---
+        loadFlow('rbo-flow'); // Load RBO flow by default
+    </script>
+</body>
+</html>

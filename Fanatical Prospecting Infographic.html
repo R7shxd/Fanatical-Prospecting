@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fanatical Prospecting: An Industry Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Section 1: Big Number (Pipeline Failure Statistic) - Goal: Inform, Method: Large Text. Donut Chart (Prospecting Mindset: Fanatical vs. Passive) - Goal: Inform, Method: Chart.js (Canvas).
+        - Section 2: Line Chart (The 30-Day Rule: Impact of Prospecting Gaps) - Goal: Change, Method: Chart.js (Canvas). Bar Chart (Law of Replacement: Opportunities Needed vs. Closed) - Goal: Compare, Method: Chart.js (Canvas). Text Callout (Universal Law of Need) - Goal: Inform, Method: Styled Text.
+        - Section 3: Stacked Bar Chart (Channel Mix by Sales Pro Tenure) - Goal: Compare, Method: Chart.js (Canvas). HTML/CSS Diagram (The Prospecting Pyramid) - Goal: Organize, Method: Structured HTML with Tailwind CSS. HTML Cards (Key Channel Summaries: Telephone, Email, Social Selling) - Goal: Inform/Compare, Method: Structured HTML with Tailwind CSS.
+        - Section 4: HTML/CSS Flow Chart (RBO Turnaround Framework: Anchor -> Disrupt -> Ask) - Goal: Organize, Method: Structured HTML with Tailwind CSS. Text Callouts (Power of "Because"/WIIFM, Confidence & Enthusiasm) - Goal: Inform, Method: Styled Text.
+        - Section 5: Radar Chart (Four Pillars of Mental Toughness) - Goal: Compare, Method: Chart.js (Canvas). Text Callout (Time Blocking Principle) - Goal: Inform, Method: Styled Text. Big Number ("One More Call" Mantra) - Goal: Inform, Method: Large Text.
+        - Section 6: Concluding Text - Goal: Inform, Method: Styled Text.
+        - Justification: Visualizations were chosen to best represent the conceptual data and frameworks from the "Fanatical Prospecting" report. Chart.js (Canvas) is used for quantitative and comparative displays. Structured HTML/CSS with Tailwind is used for diagrams like the pyramid and flow chart, strictly adhering to the NO SVG and NO MERMAID JS constraints. All label wrapping and tooltip configurations for Chart.js are implemented as required.
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; /* A very light gray, almost white */ }
+        .header-title { color: #073B4C; }
+        .section-title { color: #118AB2; border-bottom: 2px solid #FFD166; padding-bottom: 0.5rem; }
+        .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .big-number { color: #FF6B6B; font-weight: 800; }
+        .highlight-text { color: #06D6A0; font-weight: 600; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; max-height: 450px;} }
+        .pyramid-level { text-align: center; padding: 0.75rem; margin-bottom: 0.25rem; color: white; font-weight: 600; border-radius: 0.375rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .flowchart-step { background-color: #E0F2FE; border: 2px solid #118AB2; color: #073B4C; padding: 1rem; border-radius: 0.5rem; text-align: center; font-weight: 500;}
+        .flowchart-arrow { font-size: 2rem; color: #118AB2; margin: 0 0.5rem; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="text-gray-700">
+
+    <header class="py-8 bg-white shadow-lg">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold header-title">The Fanatical Prospecting Edge</h1>
+            <p class="text-lg text-gray-600 mt-2">An Analysis of Key Strategies & Market Dynamics in Modern Sales Outreach</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-semibold section-title mb-8">The Prospecting Landscape: An Overview</h2>
+            <p class="text-lg text-gray-600 mb-8">Sustained sales success isn't accidental; it's built on a relentless commitment to proactive prospecting. This section explores the core necessity of this "fanatical" approach in today's competitive market, where an active pipeline is paramount.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card p-8 text-center">
+                    <p class="text-2xl text-gray-700 mb-2">The #1 Cause of Sales Failure:</p>
+                    <p class="text-6xl big-number">An Empty Pipeline</p>
+                    <p class="text-md text-gray-500 mt-3">(Source: Fanatical Prospecting, I. Introduction)</p>
+                    <p class="mt-4 text-gray-600">Fanatical prospectors take personal responsibility, understanding that consistent, enthusiastic outreach is the bedrock of elite performance and mitigates this primary risk.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Prospecting Mindset: Fanatical vs. Passive</h3>
+                    <div class="chart-container h-64 md:h-80">
+                        <canvas id="mindsetChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-3 text-center">A conceptual representation of prospecting approaches. Fanatical prospectors actively fill their pipeline, while passive approaches lead to inconsistency.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-semibold section-title mb-8">Market Dynamics: The Unchanging Laws of Prospecting</h2>
+            <p class="text-lg text-gray-600 mb-8">The sales "market" operates under fundamental laws. Understanding these principles—the 30-Day Rule, the Law of Replacement, and the Universal Law of Need—is crucial for navigating pipeline fluctuations and achieving consistent results.</p>
+            <div class="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="card p-6 lg:col-span-1">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">The 30-Day Rule: Impact of Prospecting Gaps</h3>
+                    <div class="chart-container h-72">
+                        <canvas id="thirtyDayRuleChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-3">This chart illustrates how a 30-day gap in prospecting (blue line) typically leads to a significant pipeline dip approximately 90 days later, compared to consistent prospecting (green line). (Source: Fanatical Prospecting, III.B)</p>
+                </div>
+                <div class="card p-6 lg:col-span-1">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Law of Replacement: Opportunities Needed</h3>
+                    <div class="chart-container h-72">
+                        <canvas id="replacementLawChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-3">For every deal closed, multiple new opportunities must be added to replace not just the closed deal, but others that naturally exit the pipeline. This example assumes a 10% close rate. (Source: Fanatical Prospecting, III.C)</p>
+                </div>
+                 <div class="card p-8 lg:col-span-1 bg-sky-50 border border-sky-200">
+                    <h3 class="text-2xl font-bold text-sky-700 mb-3 text-center">Universal Law of Need</h3>
+                    <p class="text-center text-4xl mb-4">🎯</p>
+                    <p class="text-gray-700 text-center text-lg">"The more you <span class="highlight-text">need</span> something, the <span class="text-red-500 font-semibold">less likely</span> it is that you will get it."</p>
+                    <p class="mt-4 text-gray-600 text-sm">Desperation from an empty pipeline repels prospects. Consistent prospecting builds a full pipeline, fostering confidence that attracts business. (Source: Fanatical Prospecting, III.A)</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-semibold section-title mb-8">Channel Effectiveness: A Comparative Analysis</h2>
+            <p class="text-lg text-gray-600 mb-8">The modern sales professional has a diverse toolkit of outreach channels. This section analyzes the strategic application of these channels, from the high-priority targets in the Prospecting Pyramid to the nuanced effectiveness of telephone, email, and social selling.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">The Prospecting Pyramid: Prioritizing Outreach</h3>
+                    <div class="space-y-1 mt-4">
+                        <div class="pyramid-level" style="background-color: #FF6B6B; width: 60%; margin-left:auto; margin-right:auto;">Top: Hot Leads, Referrals</div>
+                        <div class="pyramid-level" style="background-color: #FF8C82; width: 70%; margin-left:auto; margin-right:auto;">Conquest Prospects</div>
+                        <div class="pyramid-level" style="background-color: #FFAC99; width: 80%; margin-left:auto; margin-right:auto;">Mid-Level Qualified</div>
+                        <div class="pyramid-level" style="background-color: #FFD166; width: 90%; margin-left:auto; margin-right:auto;">Bottom: Minimal Info</div>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-4">Top performers segment prospects to focus efforts. Start with high-potential leads (Top) and systematically qualify others upwards. (Source: Fanatical Prospecting, VI.B)</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Conceptual Channel Mix by Sales Pro Tenure</h3>
+                    <div class="chart-container h-80">
+                        <canvas id="channelMixChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-3">Newer sales professionals may rely more on broad outreach like cold calling, while seasoned pros often leverage more referrals and established networks. A balanced approach is key for all. (Conceptual based on Fanatical Prospecting, VI.A)</p>
+                </div>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-800 my-8 text-center">Key Channel Spotlights</h3>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h4 class="text-lg font-semibold text-sky-700 mb-2">📞 Telephone Prospecting</h4>
+                    <p class="text-sm text-gray-600"><span class="highlight-text">Key Stat:</span> High contact rates (15-80%). Most efficient for reaching many prospects quickly.</p>
+                    <p class="text-sm text-gray-600 mt-1"><span class="highlight-text">Primary Objective:</span> Set appointments, gather info, close transactional sales.</p>
+                    <p class="text-xs text-gray-500 mt-2">(Source: Fanatical Prospecting, VI.F.1)</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-lg font-semibold text-sky-700 mb-2">📧 Email Prospecting</h4>
+                    <p class="text-sm text-gray-600"><span class="highlight-text">Key Stat:</span> Can yield 10-20x more engagement than social prospecting.</p>
+                    <p class="text-sm text-gray-600 mt-1"><span class="highlight-text">Primary Objective:</span> Get delivered, get opened, convert to a sales conversation.</p>
+                    <p class="text-xs text-gray-500 mt-2">(Source: Fanatical Prospecting, VI.F.3)</p>
+                </div>
+                <div class="card p-6">
+                    <h4 class="text-lg font-semibold text-sky-700 mb-2">📱 Social Selling</h4>
+                    <p class="text-sm text-gray-600"><span class="highlight-text">Key Benefit:</span> Unparalleled access to buyer info, builds familiarity non-intrusively.</p>
+                    <p class="text-sm text-gray-600 mt-1"><span class="highlight-text">Primary Objective:</span> Personal branding, research, trigger event awareness, direct engagement.</p>
+                    <p class="text-xs text-gray-500 mt-2">(Source: Fanatical Prospecting, VI.F.2)</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-semibold section-title mb-8">Navigating the Competitive Landscape: Messaging & Objections</h2>
+            <p class="text-lg text-gray-600 mb-8">In a crowded market, how you communicate is as important as what you offer. This section highlights effective messaging principles and a structured approach to handling the inevitable prospect resistance (RBOs).</p>
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">RBO Turnaround Framework</h3>
+                    <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-2">
+                        <div class="flowchart-step">1. Anchor<br>(Regain Poise)</div>
+                        <div class="flowchart-arrow text-4xl text-emerald-500 font-bold">&rarr;</div>
+                        <div class="flowchart-step">2. Disrupt<br>(Break Expectation)</div>
+                        <div class="flowchart-arrow text-4xl text-emerald-500 font-bold">&rarr;</div>
+                        <div class="flowchart-step">3. Ask<br>(Re-Ask Confidently)</div>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-4">A structured approach to handling Reflex Responses, Brush-Offs, and Objections by maintaining composure, shifting the prospect's mindset, and confidently re-stating the request. (Source: Fanatical Prospecting, VII.D)</p>
+                </div>
+                <div class="space-y-6">
+                    <div class="card p-6 bg-amber-50 border border-amber-200">
+                        <h4 class="text-lg font-semibold text-amber-700 mb-2">💡 The Power of "Because" (WIIFM)</h4>
+                        <p class="text-sm text-gray-600">Messages must be relevant and answer "What's In It For Me?". Providing a reason, any reason, dramatically increases compliance. Focus on Emotional, Insight, and Tangible Value. (Source: Fanatical Prospecting, VII.B)</p>
+                    </div>
+                    <div class="card p-6 bg-teal-50 border border-teal-200">
+                        <h4 class="text-lg font-semibold text-teal-700 mb-2">🌟 Confidence & Enthusiasm</h4>
+                        <p class="text-sm text-gray-600">These are the most persuasive nonverbal cues. Cultivate them through positive self-talk, preparation, and even "power posing" to project an assertive, winning demeanor. (Source: Fanatical Prospecting, VII.A)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h2 class="text-3xl font-semibold section-title mb-8">Key Success Factors: Cultivating High-Performance</h2>
+            <p class="text-lg text-gray-600 mb-8">Beyond tools and techniques, sustained prospecting success hinges on internal attributes and disciplined habits. Mental toughness and strategic time management are critical differentiators in this demanding field.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Four Pillars of Mental Toughness</h3>
+                    <div class="chart-container h-80 md:h-96">
+                        <canvas id="mentalToughnessChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-3">Mental toughness is built on Desire, Mental Resilience (Learning), Physical Resilience, and a Positive Attitude. (Conceptual scoring based on Fanatical Prospecting, VIII.B)</p>
+                </div>
+                <div class="space-y-6">
+                    <div class="card p-8 text-center bg-rose-50 border border-rose-200">
+                        <p class="text-2xl text-gray-700 mb-2">The Mantra for Extra Effort:</p>
+                        <p class="text-5xl big-number">"One More Call"</p>
+                        <p class="text-md text-gray-600 mt-3">This simple discipline, especially when fatigued or rejected, often leads to "sales serendipity" and builds resilience. (Source: Fanatical Prospecting, VIII.C)</p>
+                    </div>
+                    <div class="card p-6">
+                        <h4 class="text-lg font-semibold text-sky-700 mb-2">⏱️ Time Blocking: Concentration of Power</h4>
+                        <p class="text-sm text-gray-600">Segment your day into dedicated blocks for specific activities (especially prospecting during "Golden Hours"). This concentrates focus, eliminates distractions, and dramatically increases output. (Source: Fanatical Prospecting, V.C)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="text-center py-12 bg-gradient-to-r from-sky-600 to-cyan-500 rounded-lg shadow-xl">
+            <h2 class="text-3xl font-bold text-white mb-6">Future Outlook: The Enduring Value of Proactive Outreach</h2>
+            <p class="text-xl text-sky-100 mb-6 max-w-3xl mx-auto">In an ever-evolving sales landscape, the principles of fanatical prospecting remain timeless. While tools and technologies change, the fundamental need for proactive, consistent, and enthusiastic outreach to fill the sales pipeline is a constant. The "art of interrupting," balanced channel utilization, compelling messaging, and unwavering mental toughness will continue to define elite sales performers.</p>
+            <p class="text-2xl font-semibold text-amber-300">"How bad do you want it?"</p>
+            <p class="text-sm text-sky-200 mt-2">(Source: Fanatical Prospecting, VIII.D)</p>
+        </section>
+    </main>
+
+    <footer class="text-center py-8 mt-12 border-t border-gray-200">
+        <p class="text-sm text-gray-500">&copy; <span id="currentYear"></span> Fanatical Prospecting Infographic. Inspired by the work of Jeb Blount. For educational purposes.</p>
+    </footer>
+
+<script>
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    function wrapText(text, maxLength) {
+        if (typeof text !== 'string' || text.length <= maxLength) {
+            return text;
+        }
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+        for (const word of words) {
+            if ((currentLine + word).length > maxLength && currentLine.length > 0) {
+                lines.push(currentLine.trim());
+                currentLine = '';
+            }
+            currentLine += word + ' ';
+        }
+        if (currentLine.trim().length > 0) {
+            lines.push(currentLine.trim());
+        }
+        return lines.length > 0 ? lines : [text]; // Return original text if no split occurred
+    }
+    
+    const tooltipTitleCallback = function(tooltipItems) {
+        const item = tooltipItems[0];
+        let label = item.chart.data.labels[item.dataIndex];
+        if (Array.isArray(label)) {
+          return label.join(' ');
+        } else {
+          return label;
+        }
+    };
+
+    // Chart 1: Mindset Chart (Donut)
+    const mindsetCtx = document.getElementById('mindsetChart');
+    if (mindsetCtx) {
+        new Chart(mindsetCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fanatical Prospecting (Active, Consistent)', 'Passive Approach (Reactive, Inconsistent)'],
+                datasets: [{
+                    label: 'Prospecting Mindset',
+                    data: [75, 25], // Conceptual data
+                    backgroundColor: ['#06D6A0', '#FFD166'],
+                    borderColor: ['#FFFFFF', '#FFFFFF'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+    }
+
+    // Chart 2: 30-Day Rule Chart (Line)
+    const thirtyDayRuleCtx = document.getElementById('thirtyDayRuleChart');
+    if (thirtyDayRuleCtx) {
+        new Chart(thirtyDayRuleCtx, {
+            type: 'line',
+            data: {
+                labels: ['Day 0', 'Day 30', 'Day 60', 'Day 90 (Impact Point)', 'Day 120'],
+                datasets: [{
+                    label: 'Consistent Prospecting',
+                    data: [60, 65, 70, 75, 80], // Conceptual
+                    borderColor: '#06D6A0',
+                    backgroundColor: 'rgba(6, 214, 160, 0.1)',
+                    fill: true,
+                    tension: 0.1
+                }, {
+                    label: 'Prospecting Gap (Days 0-30)',
+                    data: [60, 40, 30, 20, 25], // Conceptual
+                    borderColor: '#FF6B6B',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, suggestedMax: 100, title: { display: true, text: 'Pipeline Health (%)' } } },
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+    }
+
+    // Chart 3: Law of Replacement (Bar)
+    const replacementLawCtx = document.getElementById('replacementLawChart');
+    if (replacementLawCtx) {
+        new Chart(replacementLawCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Deals Closed', 'Opportunities Needed to Replace'],
+                datasets: [{
+                    label: 'Number of Opportunities',
+                    data: [1, 10], // Conceptual: 1 deal closed, 10 needed if 10% close rate
+                    backgroundColor: ['#118AB2', '#FFD166'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true, title: { display: true, text: 'Count' } } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+    }
+
+    // Chart 4: Channel Mix by Tenure (Stacked Bar)
+    const channelMixCtx = document.getElementById('channelMixChart');
+    if (channelMixCtx) {
+        new Chart(channelMixCtx, {
+            type: 'bar',
+            data: {
+                labels: ['New Sales Pro', 'Seasoned Sales Pro'],
+                datasets: [
+                    { label: 'Cold Calling / IPP', data: [40, 15], backgroundColor: '#FF6B6B' },
+                    { label: 'Email / Social', data: [30, 30], backgroundColor: '#FFD166' },
+                    { label: 'Referrals / Networking', data: [15, 40], backgroundColor: '#06D6A0' },
+                    { label: 'Inbound / Nurturing', data: [15, 15], backgroundColor: '#118AB2' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: 'Effort Allocation (%)' } } },
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                    tooltip: { callbacks: { title: tooltipTitleCallback } }
+                }
+            }
+        });
+    }
+    
+    // Chart 5: Mental Toughness (Radar)
+    const mentalToughnessCtx = document.getElementById('mentalToughnessChart');
+    if (mentalToughnessCtx) {
+        const rawLabelsMental = ['Desire', 'Mental Resilience (Learning)', 'Physical Resilience', 'Positive Attitude'];
+        const wrappedLabelsMental = rawLabelsMental.map(label => wrapText(label, 16));
+
+        new Chart(mentalToughnessCtx, {
+            type: 'radar',
+            data: {
+                labels: wrappedLabelsMental,
+                datasets: [{
+                    label: 'Mental Toughness Score (Conceptual)',
+                    data: [9, 7, 8, 9], // Conceptual scores
+                    fill: true,
+                    backgroundColor: 'rgba(6, 214, 160, 0.2)',
+                    borderColor: '#06D6A0',
+                    pointBackgroundColor: '#06D6A0',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#06D6A0'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { display: true },
+                        suggestedMin: 0,
+                        suggestedMax: 10,
+                        pointLabels: { font: { size: 11 } },
+                        ticks: { backdropColor: 'transparent', stepSize: 2 }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                // For radar charts, the label is directly accessible this way
+                                let label = item.label;
+                                // If it was split into an array by wrapText, join it back
+                                if (Array.isArray(label)) {
+                                  return label.join(' ');
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+</script>
+</body>
+</html>
